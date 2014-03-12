@@ -242,7 +242,7 @@ namespace stdex
                 other.init_null();
         }
         
-        function& operator=(function other)
+        function& operator=(function other) noexcept
         {
             swap(other);
             return *this;
@@ -317,7 +317,7 @@ namespace stdex
         }
         
         bool (*_ctrl)(void**, void**, detail::ctrl_code);
-        mutable void* _data; // may sore small object inplace
+        mutable void* _data; // may store small object inplace
     };
 
     template<class R, class... Ts, class... Rest>
@@ -401,7 +401,7 @@ namespace stdex
                 other.init_null();
         }
 
-        function& operator=(function other)
+        function& operator=(function other) noexcept
         {
             steal(other);
             return *this;
@@ -479,6 +479,7 @@ namespace stdex
         return f;
     }
 }
+
 
 #endif
 
