@@ -17,8 +17,8 @@ Compiled with `g++ -O3 -std=c++11` (64-bit)
 
 #### [various.cpp](various.cpp)
 This test shows the internal size of each implementation at the beginning.
-Note that bigger does not necessarily mean that it's less space efficient, it's probably due to the decision on how much space is used for small object optimization.
-The rest part shows the calling overhead when assigned different callable objects.
+Note that bigger does not necessarily mean that it's less space efficient, it may due to the decision on how much space is used for small object optimization.
+The rest part shows the timing of each implementation when assigned different callable objects.
 ```
 [size]
 stdex::function<int(int)>: 24
@@ -71,7 +71,7 @@ Perf< generic::delegate<int(int)> >: 0.5359315200 [s] {checksum: 0}
 ```
 
 #### [overload.cpp](overload.cpp)
-This compares the performance of each multi-method technique.
+This shows the timing of each multi-method technique.
 ```
 with< no_abstraction >: 0.0904054689 [s] {checksum: 3}
 with< stdex::function<Sig...> >: 0.6127457961 [s] {checksum: 3}
