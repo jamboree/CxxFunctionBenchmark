@@ -90,8 +90,9 @@ namespace cases
     template<class F>
     struct lambda_capture : base<F>
     {
-        lambda_capture(int a = 2)
+        lambda_capture()
         {
+            int a = 2;
             this->f = [a](int val)
             {
                 return val * a;
