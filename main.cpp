@@ -138,10 +138,22 @@ void benchmark(char const* name)
 }
      
 #define BENCHMARK(name) benchmark<cases::name>(#name)
+#define SHOW_SIZE(name) \
+std::cout << #name << ": " << sizeof(name) << std::endl;
 
 
 int main(int argc, char *argv[])
 {
+    std::cout << "[size]\n";
+    SHOW_SIZE(stdex::function<int(int)>);
+    SHOW_SIZE(std::function<int(int)>);
+    SHOW_SIZE(multifunction<int(int)>);
+    SHOW_SIZE(boost::function<int(int)>);
+    SHOW_SIZE(func::function<int(int)>);
+    SHOW_SIZE(generic::delegate<int(int)>);
+    SHOW_SIZE(ssvu::FastFunc<int(int)>);
+    std::cout << std::endl;
+    
     BENCHMARK(function_pointer);
     BENCHMARK(lambda);
     BENCHMARK(lambda_capture);
