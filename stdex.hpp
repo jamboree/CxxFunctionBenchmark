@@ -16,6 +16,43 @@
 #include <boost/type_traits/has_trivial_move_constructor.hpp>
 
 
+namespace stdex
+{
+    template<class F, F* f>
+    struct function_wrapper;
+    
+    template<class R, class... Ts, R(*f)(Ts...)>
+    struct function_wrapper<R(Ts...), f>
+    {
+        template<class... As>
+        R operator()(As&&... as) const
+        {
+            return f(std::forward<As>(as)...);
+        }
+    };
+    
+    template<class T, class F, F(T::*f)>
+    struct method_wrapper;
+    
+    template<class T, class R, class... Ts, R(T::*f)(Ts...)>
+    struct method_wrapper<T, R(Ts...), f>
+    {
+        explicit method_wrapper(T* that)
+          : that(that)
+        {}
+
+        template<class... As>
+        R operator()(As&&... as) const
+        {
+            return (that->*f)(std::forward<As>(as)...);
+        }
+        
+    private:
+        
+        T* that;
+    };
+}
+
 namespace stdex { namespace detail
 {
     template<class R, class... Ts>
@@ -97,31 +134,57 @@ namespace stdex { namespace detail
             return true;
         }
     };
+    
+    template<class F>
+    struct fwd_emplaceable
+    {
+        template<class R, class... Ts>
+        static R fwd(void*, void* data, Ts... args)
+        {
+            return (*static_cast<F*>(data))(std::forward<Ts>(args)...);
+        }
+    };
+    
+    template<class F>
+    struct fwd_emplaceable<F*>
+    {
+        template<class R, class... Ts>
+        static R fwd(void* fp, void*, Ts... args)
+        {
+            return reinterpret_cast<F*>(fp)(std::forward<Ts>(args)...);
+        }
+    };
+    
+    template<class F, F* f>
+    struct fwd_emplaceable<function_wrapper<F, f> >
+    {
+        template<class R, class... Ts>
+        static R fwd(void*, void*, Ts... args)
+        {
+            return f(std::forward<Ts>(args)...);
+        }
+    };
+    
+    template<class T, class F, F(T::*f)>
+    struct fwd_emplaceable<method_wrapper<T, F, f> >
+    {
+        template<class R, class... Ts>
+        static R fwd(void* data, void*, Ts... args)
+        {
+            return (static_cast<T*>(data)->*f)(std::forward<Ts>(args)...);
+        }
+    };
 
     template<class F, class Alloc>
     struct function_manager<F, Alloc,
         typename std::enable_if<is_emplaceable<F>::value>::type>
+      : fwd_emplaceable<F>
     {
         static void create(void** data, F& f, Alloc const& = Alloc())
         {
             new(data) F(std::move(f));
         }
-        
-        template<class R, class... Ts>
-        static typename std::enable_if<!std::is_pointer<F>::value, R>::type
-        fwd(void*, void* data, Ts... args)
-        {
-            return (*static_cast<F*>(data))(std::forward<Ts>(args)...);
-        }
-        
-        // possible optimize for raw function ptr
-        template<class R, class... Ts>
-        static typename std::enable_if<std::is_pointer<F>::value, R>::type
-        fwd(void* fp, void*, Ts... args)
-        {
-            return reinterpret_cast<F>(fp)(std::forward<Ts>(args)...);
-        }
-        
+
         static bool ctrl(void** src, void** dst, ctrl_code code)
         {
             F* data = static_cast<F*>(static_cast<void*>(src));
@@ -378,7 +441,7 @@ namespace stdex
             else
                 init_null();
         }
-    
+
         // copy
         function(function const& other)
           : base_type(static_cast<base_type const&>(other)), caller(other)

@@ -52,12 +52,35 @@ struct func2
     
     int& a;
 };
+
+struct A
+{
+    A(): a(2) {}
+
+    int f(int val)
+    {
+        return val * a;
+    }
+    
+    int a;
+};
+
+struct no_abstraction;
+
+typedef generic::delegate<int(int)> generic_delegate;
         
 namespace cases
 {
     template<class F>
     struct base : test::base
     {
+        base() {}
+
+        template<class Fn>
+        explicit base(Fn&& fn)
+          : f(std::forward<Fn>(fn))
+        {}
+        
         void benchmark()
         {
             this->val += f(this->val);
@@ -70,11 +93,63 @@ namespace cases
     struct function_pointer : base<F>
     {
         function_pointer()
-        {
-            this->f = &plain;
-        }
+          : base<F>(&plain)
+        {}
     };
     
+    template<>
+    struct function_pointer<no_abstraction>
+      : function_pointer<int(*)(int)>
+    {};
+
+    template<class F>
+    struct compile_time_function_pointer : base<F>
+    {
+        compile_time_function_pointer()
+          : base<F>(stdex::function_wrapper<int(int), &plain>())
+        {}
+    };
+    
+    template<>
+    struct compile_time_function_pointer<generic_delegate>
+      : base<generic_delegate>
+    {
+        compile_time_function_pointer()
+          : base<generic_delegate>(generic_delegate::from<&plain>())
+        {}
+    };
+    
+    template<>
+    struct compile_time_function_pointer<no_abstraction>
+      : compile_time_function_pointer<stdex::function_wrapper<int(int), &plain> >
+    {};
+
+    template<class F>
+    struct compile_time_delegate : base<F>
+    {
+        compile_time_delegate()
+          : base<F>(stdex::method_wrapper<A, int(int), &A::f>(&a))
+        {}
+        
+        A a;
+    };
+    
+    template<>
+    struct compile_time_delegate<generic_delegate>
+      : base<generic_delegate>
+    {
+        compile_time_delegate()
+          : base<generic_delegate>(generic_delegate::from<A, &A::f>(&a))
+        {}
+        
+        A a;
+    };
+    
+    template<>
+    struct compile_time_delegate<no_abstraction>
+      : compile_time_delegate<stdex::method_wrapper<A, int(int), &A::f> >
+    {};
+            
     template<class F>
     struct lambda : base<F>
     {
@@ -104,25 +179,41 @@ namespace cases
     struct heavy_functor : base<F>
     {
         heavy_functor()
-        {
-            this->f = func1();
-        }
+          : base<F>(func1())
+        {}
     };
     
     template<class F>
     struct non_assignable : base<F>
     {
         non_assignable()
-        {
-            this->f = func2{a};
-        }
+          : base<F>(func2{a})
+        {}
         
         int a = 2;
     };
 }
 
 template<template<class> class Perf>
-void benchmark(char const* name)
+void benchmark1(char const* name)
+{
+    std::cout << "[" << name << "]\n";
+    BOOST_SPIRIT_TEST_BENCHMARK(
+        MAX_REPEAT,
+        (Perf< no_abstraction >)
+        (Perf< stdex::function<int(int)> >)
+        (Perf< std::function<int(int)> >)
+        (Perf< multifunction<int(int)> >)
+        (Perf< boost::function<int(int)> >)
+        (Perf< func::function<int(int)> >)
+        (Perf< generic::delegate<int(int)> >)
+        //(Perf< ssvu::FastFunc<int(int)> >)
+    )
+    std::cout << std::endl;
+}
+
+template<template<class> class Perf>
+void benchmark2(char const* name)
 {
     std::cout << "[" << name << "]\n";
     BOOST_SPIRIT_TEST_BENCHMARK(
@@ -137,8 +228,8 @@ void benchmark(char const* name)
     )
     std::cout << std::endl;
 }
-     
-#define BENCHMARK(name) benchmark<cases::name>(#name)
+
+#define BENCHMARK(i, name) benchmark##i<cases::name>(#name)
 #define SHOW_SIZE(name) \
 std::cout << #name << ": " << sizeof(name) << std::endl;
 
@@ -155,11 +246,13 @@ int main(int argc, char *argv[])
     SHOW_SIZE(ssvu::FastFunc<int(int)>);
     std::cout << std::endl;
     
-    BENCHMARK(function_pointer);
-    BENCHMARK(lambda);
-    BENCHMARK(lambda_capture);
-    BENCHMARK(heavy_functor);
-    BENCHMARK(non_assignable);
+    BENCHMARK(1, function_pointer);
+    BENCHMARK(1, compile_time_function_pointer);
+    BENCHMARK(1, compile_time_delegate);
+    BENCHMARK(2, lambda);
+    BENCHMARK(2, lambda_capture);
+    BENCHMARK(2, heavy_functor);
+    BENCHMARK(2, non_assignable);
 
     // This is ultimately responsible for preventing all the test code
     // from being optimized away.  Change this to return 0 and you
