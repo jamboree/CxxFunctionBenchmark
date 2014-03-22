@@ -298,7 +298,7 @@ namespace stdex
         
         // move / move from superset
         template<class... Sig>
-        function(function<Sig...>&& other)
+        function(function<Sig...>&& other) noexcept
           : _ctrl(other._ctrl)
         {
             if (_ctrl(&other._data, &_data, detail::ctrl_code::move))
@@ -456,8 +456,8 @@ namespace stdex
         
         // move / move from superset
         template<class... Sig>
-        function(function<Sig...>&& other, typename std::enable_if<
-            is_subset_of<function<Sig...> >::value, bool>::type moved = false)
+        function(function<Sig...>&& other, typename std::enable_if<is_subset_of<
+            function<Sig...> >::value, bool>::type moved = false) noexcept
           : base_type(internal_tag(), other, moved), caller(other)
         {
             if (moved)
