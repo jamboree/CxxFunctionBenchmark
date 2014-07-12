@@ -11,6 +11,7 @@
 #include <functional>
 #include <type_traits>
 #include <typeinfo>
+#include <cstdint>
 // std::is_trivially_move_constructible is not well supported, so I resort to
 // Boost here :/
 #include <boost/type_traits/has_trivial_move_constructor.hpp>
@@ -56,7 +57,7 @@ namespace stdex
 namespace stdex { namespace detail
 {
     template<class R, class... Ts>
-    R bad_call(void* /*data*/, void*, Ts... /*args*/)
+    R bad_call(std::uintptr_t /*data*/, void*, Ts... /*args*/)
     {
         throw std::bad_function_call();
     }
@@ -66,14 +67,14 @@ namespace stdex { namespace detail
         del, copy, move, get
     };
     
-    inline bool null_ctrl(void** /*data*/, void** /*dst*/, ctrl_code /*code*/)
+    inline bool null_ctrl(std::uintptr_t* /*data*/, std::uintptr_t* /*dst*/, ctrl_code /*code*/)
     {
         return false;
     }
     
     template<class T>
     struct is_emplaceable
-      : std::integral_constant<bool, sizeof(T) <= sizeof(void*)
+      : std::integral_constant<bool, sizeof(T) <= sizeof(std::uintptr_t)
             && alignof(void*) % alignof(T) == 0
             && std::is_nothrow_move_constructible<T>::value
             && std::is_nothrow_destructible<T>::value>
@@ -93,28 +94,29 @@ namespace stdex { namespace detail
             {}
         };
         
-        static void create(void** data, F& f, Alloc const& alloc = Alloc())
+        static void create(std::uintptr_t* data, F& f, Alloc const& alloc = Alloc())
         {
             typename wrapper::alloc_base a(alloc);
-            *data = new (a.allocate(1)) wrapper(std::move(a), std::move(f));
+            *data = reinterpret_cast<std::uintptr_t>(
+                new(a.allocate(1)) wrapper(std::move(a), std::move(f)));
         }
         
         template<class R, class... Ts>
-        static R fwd(void* data, void*, Ts... args)
+        static R fwd(std::uintptr_t data, void*, Ts... args)
         {
-            return (*static_cast<wrapper*>(data))(std::forward<Ts>(args)...);
+            return (*reinterpret_cast<wrapper*>(data))(std::forward<Ts>(args)...);
         }
         
-        static bool ctrl(void** src, void** dst, ctrl_code code)
+        static bool ctrl(std::uintptr_t* src, std::uintptr_t* dst, ctrl_code code)
         {
-            wrapper* data = static_cast<wrapper*>(*src);
+            wrapper* data = reinterpret_cast<wrapper*>(*src);
             switch (code)
             {
             case ctrl_code::copy:
                 {
                     typename wrapper::alloc_base a(*data);
-                    *dst = new(a.allocate(1))
-                        wrapper(std::move(a), F(static_cast<F&&>(*data)));
+                    *dst = reinterpret_cast<std::uintptr_t>(new(a.allocate(1))
+                        wrapper(std::move(a), F(static_cast<F&&>(*data))));
                     break;
                 }
             case ctrl_code::move:
@@ -128,8 +130,8 @@ namespace stdex { namespace detail
                     break;
                 }
             case ctrl_code::get:
-                *dst = const_cast<void*>(static_cast<void const*>(&typeid(F)));
-                *++dst = static_cast<F*>(data);
+                *dst = reinterpret_cast<std::uintptr_t>(&typeid(F));
+                *++dst = reinterpret_cast<std::uintptr_t>(data);
             }
             return true;
         }
@@ -139,7 +141,7 @@ namespace stdex { namespace detail
     struct fwd_emplaceable
     {
         template<class R, class... Ts>
-        static R fwd(void*, void* data, Ts... args)
+        static R fwd(std::uintptr_t, void* data, Ts... args)
         {
             return (*static_cast<F*>(data))(std::forward<Ts>(args)...);
         }
@@ -149,7 +151,7 @@ namespace stdex { namespace detail
     struct fwd_emplaceable<F*>
     {
         template<class R, class... Ts>
-        static R fwd(void* fp, void*, Ts... args)
+        static R fwd(std::uintptr_t fp, void*, Ts... args)
         {
             return reinterpret_cast<F*>(fp)(std::forward<Ts>(args)...);
         }
@@ -159,7 +161,7 @@ namespace stdex { namespace detail
     struct fwd_emplaceable<function_wrapper<F, f> >
     {
         template<class R, class... Ts>
-        static R fwd(void*, void*, Ts... args)
+        static R fwd(std::uintptr_t, void*, Ts... args)
         {
             return f(std::forward<Ts>(args)...);
         }
@@ -169,9 +171,9 @@ namespace stdex { namespace detail
     struct fwd_emplaceable<method_wrapper<T, F, f> >
     {
         template<class R, class... Ts>
-        static R fwd(void* data, void*, Ts... args)
+        static R fwd(std::uintptr_t data, void*, Ts... args)
         {
-            return (static_cast<T*>(data)->*f)(std::forward<Ts>(args)...);
+            return (reinterpret_cast<T*>(data)->*f)(std::forward<Ts>(args)...);
         }
     };
 
@@ -180,12 +182,12 @@ namespace stdex { namespace detail
         typename std::enable_if<is_emplaceable<F>::value>::type>
       : fwd_emplaceable<F>
     {
-        static void create(void** data, F& f, Alloc const& = Alloc())
+        static void create(std::uintptr_t* data, F& f, Alloc const& = Alloc())
         {
             new(data) F(std::move(f));
         }
 
-        static bool ctrl(void** src, void** dst, ctrl_code code)
+        static bool ctrl(std::uintptr_t* src, std::uintptr_t* dst, ctrl_code code)
         {
             F* data = static_cast<F*>(static_cast<void*>(src));
             switch (code)
@@ -202,8 +204,8 @@ namespace stdex { namespace detail
                 data->~F();
                 break;
             case ctrl_code::get:
-                *dst = const_cast<void*>(static_cast<void const*>(&typeid(F)));
-                *++dst = data;
+                *dst = reinterpret_cast<std::uintptr_t>(&typeid(F));
+                *++dst = reinterpret_cast<std::uintptr_t>(data);
             }
             return true;
         }
@@ -313,7 +315,7 @@ namespace stdex
         
         void swap(function& other) noexcept
         {
-            void* tmp;
+            std::uintptr_t tmp;
             _ctrl(&_data, &tmp, detail::ctrl_code::move);
             other._ctrl(&other._data, &_data, detail::ctrl_code::move);
             _ctrl(&tmp, &other._data, detail::ctrl_code::move);
@@ -332,20 +334,20 @@ namespace stdex
 
         std::type_info const& target_type() const
         {
-            void* ret[2] =
-                {const_cast<void*>(static_cast<void const*>(&typeid(void)))};
+            std::uintptr_t ret[2] =
+                {reinterpret_cast<std::uintptr_t>(&typeid(void))};
             _ctrl(&_data, ret, detail::ctrl_code::get);
-            return *static_cast<std::type_info const*>(ret[0]);
+            return *reinterpret_cast<std::type_info const*>(ret[0]);
         }
         
         template<class T> 
         T* target() noexcept
         {
-            void* ret[2] =
-                {const_cast<void*>(static_cast<void const*>(&typeid(void)))};
+            std::uintptr_t ret[2] =
+                {reinterpret_cast<std::uintptr_t>(&typeid(void))};
             _ctrl(&_data, ret, detail::ctrl_code::get);
-            if (*static_cast<std::type_info const*>(ret[0]) == typeid(T))
-                return static_cast<T*>(ret[1]);
+            if (*reinterpret_cast<std::type_info const*>(ret[0]) == typeid(T))
+                return reinterpret_cast<T*>(ret[1]);
             else
                 return nullptr;
         }
@@ -379,17 +381,17 @@ namespace stdex
             swap(other);
         }
         
-        bool (*_ctrl)(void**, void**, detail::ctrl_code);
-        mutable void* _data; // may store small object inplace
+        bool (*_ctrl)(std::uintptr_t*, std::uintptr_t*, detail::ctrl_code);
+        mutable std::uintptr_t _data; // may store small object inplace
     };
 
     template<class R, class... Ts, class... Rest>
     class function<R(Ts...), Rest...>
       : function<Rest...> // avoid slicing
-      , public detail::trampoline<R(void*, void*, Ts...)>
+      , public detail::trampoline<R(std::uintptr_t, void*, Ts...)>
     {
         typedef function<Rest...> base_type;
-        typedef detail::trampoline<R(void*, void*, Ts...)> caller;
+        typedef detail::trampoline<R(std::uintptr_t, void*, Ts...)> caller;
         
     protected:
 
