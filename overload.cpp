@@ -10,7 +10,8 @@
 #include "function.h"
 #include "delegate.hpp"
 #include "FastFunc.hpp"
-#include "stdex.hpp"  
+#include "stdex.hpp"
+#include "cxx_function.hpp"
 #include "measure.hpp"  
 
 
@@ -99,6 +100,7 @@ void benchmark()
         (with< no_abstraction >)
         (with< stdex::function<Sig...> >)
         (with< multifunction<Sig...> >)
+        (with< cxx_function::function<Sig...> >)
         (with< virtual_base& >)
     )
 }

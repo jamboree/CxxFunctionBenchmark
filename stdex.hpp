@@ -75,7 +75,7 @@ namespace stdex { namespace detail
     template<class T>
     struct is_emplaceable
       : std::integral_constant<bool, sizeof(T) <= sizeof(std::uintptr_t)
-            && alignof(void*) % alignof(T) == 0
+            && alignof(std::uintptr_t) % alignof(T) == 0
             && std::is_nothrow_move_constructible<T>::value
             && std::is_nothrow_destructible<T>::value>
     {};

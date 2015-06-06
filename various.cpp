@@ -10,7 +10,8 @@
 #include "function.h"
 #include "delegate.hpp"
 #include "FastFunc.hpp"
-#include "stdex.hpp"  
+#include "stdex.hpp"
+#include "cxx_function.hpp"
 #include "measure.hpp"  
 
 
@@ -203,6 +204,7 @@ void benchmark1(char const* name)
         (Perf< no_abstraction >)
         (Perf< stdex::function<int(int)> >)
         (Perf< std::function<int(int)> >)
+        (Perf< cxx_function::function<int(int)> >)
         (Perf< multifunction<int(int)> >)
         (Perf< boost::function<int(int)> >)
         (Perf< func::function<int(int)> >)
@@ -220,6 +222,7 @@ void benchmark2(char const* name)
         MAX_REPEAT,
         (Perf< stdex::function<int(int)> >)
         (Perf< std::function<int(int)> >)
+        (Perf< cxx_function::function<int(int)> >)
         (Perf< multifunction<int(int)> >)
         (Perf< boost::function<int(int)> >)
         (Perf< func::function<int(int)> >)
@@ -239,6 +242,7 @@ int main(int argc, char *argv[])
     std::cout << "[size]\n";
     SHOW_SIZE(stdex::function<int(int)>);
     SHOW_SIZE(std::function<int(int)>);
+    SHOW_SIZE(cxx_function::function<int(int)>);
     SHOW_SIZE(multifunction<int(int)>);
     SHOW_SIZE(boost::function<int(int)>);
     SHOW_SIZE(func::function<int(int)>);
