@@ -9,6 +9,7 @@
 // inline aggressively
 # pragma inline_recursion(on) // turn on inline recursion
 # pragma inline_depth(255)    // max inline depth
+# undef _SECURE_SCL
 # define _SECURE_SCL 0 
 #endif
 

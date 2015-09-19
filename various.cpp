@@ -11,7 +11,11 @@
 #include "delegate.hpp"
 #include "FastFunc.hpp"
 #include "stdex.hpp"
-#include "cxx_function.hpp"
+
+#ifndef _WIN32
+  #include "cxx_function.hpp"
+#endif
+
 #include "measure.hpp"  
 
 
@@ -195,6 +199,12 @@ namespace cases
     };
 }
 
+#ifndef _WIN32
+    #define PERF_CXX_FUNCTION (Perf< cxx_function::function<int(int)> >)
+#else
+    #define PERF_CXX_FUNCTION
+#endif
+
 template<template<class> class Perf>
 void benchmark1(char const* name)
 {
@@ -204,7 +214,7 @@ void benchmark1(char const* name)
         (Perf< no_abstraction >)
         (Perf< stdex::function<int(int)> >)
         (Perf< std::function<int(int)> >)
-        (Perf< cxx_function::function<int(int)> >)
+        PERF_CXX_FUNCTION
         (Perf< multifunction<int(int)> >)
         (Perf< boost::function<int(int)> >)
         (Perf< func::function<int(int)> >)
@@ -222,7 +232,7 @@ void benchmark2(char const* name)
         MAX_REPEAT,
         (Perf< stdex::function<int(int)> >)
         (Perf< std::function<int(int)> >)
-        (Perf< cxx_function::function<int(int)> >)
+        PERF_CXX_FUNCTION
         (Perf< multifunction<int(int)> >)
         (Perf< boost::function<int(int)> >)
         (Perf< func::function<int(int)> >)
@@ -237,12 +247,14 @@ void benchmark2(char const* name)
 std::cout << #name << ": " << sizeof(name) << std::endl;
 
 
-int main(int argc, char *argv[])
+int main(int /*argc*/, char* /*argv*/[])
 {
     std::cout << "[size]\n";
     SHOW_SIZE(stdex::function<int(int)>);
     SHOW_SIZE(std::function<int(int)>);
+#ifndef _WIN32
     SHOW_SIZE(cxx_function::function<int(int)>);
+#endif
     SHOW_SIZE(multifunction<int(int)>);
     SHOW_SIZE(boost::function<int(int)>);
     SHOW_SIZE(func::function<int(int)>);
