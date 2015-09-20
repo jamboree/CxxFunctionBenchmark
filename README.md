@@ -12,6 +12,7 @@ Currently include:
 - [generic::delegate](delegate.hpp) - [Fast delegate in C++11](http://codereview.stackexchange.com/questions/14730/impossibly-fast-delegate-in-c11), also see [here](https://code.google.com/p/cpppractice/source/browse/trunk/).
 - [~~ssvu::FastFunc~~](FastFunc.hpp) - Another Don Clugston's FastDelegate, as shown [here](https://groups.google.com/a/isocpp.org/forum/#!topic/std-discussion/QgvHF7YMi3o).
 - [cxx_function::function](https://github.com/potswa/cxx_function) - By David Krauss
+- [fu2::function](http://naios.github.io/function2/) - By Denis Blank
 
 ### Sample Result
 Compiled with `g++ -O3 -std=c++11` (64-bit)
