@@ -15,16 +15,17 @@ Currently include:
 - [fu2::function](http://naios.github.io/function2/) - By Denis Blank
 
 ### Sample Result
-Compiled with `g++ -O3 -std=c++11` (64-bit)
+Compiled with `g++ -O3 -std=c++14 -DNDEBUG` (64-bit/g++5.3.0/MinGW)
 
 #### [various.cpp](various.cpp)
-This test shows the internal size of each implementation at the beginning.
-Note that bigger does not necessarily mean that it's less space efficient, it may due to the decision on how much space is used for small object optimization.
+This test shows the internal size of each implementation in the `[size]` section.
+Note that bigger size does not necessarily mean that it's less space efficient, it may due to the decision on how much space is used for small object optimization.
 The rest part shows the timing of each implementation when assigned different callable objects.
 ```
 [size]
 stdex::function<int(int)>: 24
 std::function<int(int)>: 32
+cxx_function::function<int(int)>: 32
 multifunction<int(int)>: 32
 boost::function<int(int)>: 32
 func::function<int(int)>: 32
@@ -33,77 +34,85 @@ ssvu::FastFunc<int(int)>: 40
 fu2::function<int(int)>: 40
 
 [function_pointer]
-Perf< no_abstraction >: 0.3103266979 [s] {checksum: 0}
-Perf< stdex::function<int(int)> >: 0.3930032573 [s] {checksum: 0}
-Perf< std::function<int(int)> >: 0.4384391409 [s] {checksum: 0}
-Perf< multifunction<int(int)> >: 0.4048384686 [s] {checksum: 0}
-Perf< boost::function<int(int)> >: 0.3642173096 [s] {checksum: 0}
-Perf< func::function<int(int)> >: 0.4289271318 [s] {checksum: 0}
-Perf< generic::delegate<int(int)> >: 0.4474289095 [s] {checksum: 0}
-Perf< fu2::function<int(int)> >: 0.4101610338 [s] {checksum: 0}
+Perf< no_abstraction >: 0.2939271719 [s] {checksum: 0}
+Perf< stdex::function<int(int)> >: 0.3526247343 [s] {checksum: 0}
+Perf< std::function<int(int)> >: 0.4566822677 [s] {checksum: 0}
+Perf< cxx_function::function<int(int)> >: 0.3691389638 [s] {checksum: 0}
+Perf< multifunction<int(int)> >: 0.4132227755 [s] {checksum: 0}
+Perf< boost::function<int(int)> >: 0.4079642189 [s] {checksum: 0}
+Perf< func::function<int(int)> >: 0.3633898474 [s] {checksum: 0}
+Perf< generic::delegate<int(int)> >: 0.4593472260 [s] {checksum: 0}
+Perf< fu2::function<int(int)> >: 0.4513318711 [s] {checksum: 0}
 
 [compile_time_function_pointer]
-Perf< no_abstraction >: 0.0948516111 [s] {checksum: 0}
-Perf< stdex::function<int(int)> >: 0.3054994933 [s] {checksum: 0}
-Perf< std::function<int(int)> >: 0.3320486388 [s] {checksum: 0}
-Perf< multifunction<int(int)> >: 0.3247071917 [s] {checksum: 0}
-Perf< boost::function<int(int)> >: 0.3383932849 [s] {checksum: 0}
-Perf< func::function<int(int)> >: 0.3094601371 [s] {checksum: 0}
-Perf< generic::delegate<int(int)> >: 0.3890742935 [s] {checksum: 0}
-Perf< fu2::function<int(int)> >: 0.3851613298 [s] {checksum: 0}
+Perf< no_abstraction >: 0.0930527404 [s] {checksum: 0}
+Perf< stdex::function<int(int)> >: 0.2811758200 [s] {checksum: 0}
+Perf< std::function<int(int)> >: 0.3349437856 [s] {checksum: 0}
+Perf< cxx_function::function<int(int)> >: 0.3452720990 [s] {checksum: 0}
+Perf< multifunction<int(int)> >: 0.3271380306 [s] {checksum: 0}
+Perf< boost::function<int(int)> >: 0.3292356293 [s] {checksum: 0}
+Perf< func::function<int(int)> >: 0.3276167503 [s] {checksum: 0}
+Perf< generic::delegate<int(int)> >: 0.3924880688 [s] {checksum: 0}
+Perf< fu2::function<int(int)> >: 0.4055834204 [s] {checksum: 0}
 
 [compile_time_delegate]
-Perf< no_abstraction >: 0.2350802257 [s] {checksum: 0}
-Perf< stdex::function<int(int)> >: 0.3383824048 [s] {checksum: 0}
-Perf< std::function<int(int)> >: 0.4250746481 [s] {checksum: 0}
-Perf< multifunction<int(int)> >: 0.4621998037 [s] {checksum: 0}
-Perf< boost::function<int(int)> >: 0.3788282037 [s] {checksum: 0}
-Perf< func::function<int(int)> >: 0.3465440127 [s] {checksum: 0}
-Perf< generic::delegate<int(int)> >: 0.4270445700 [s] {checksum: 0}
-Perf< fu2::function<int(int)> >: 0.4830267037 [s] {checksum: 0}
+Perf< no_abstraction >: 0.2275358544 [s] {checksum: 0}
+Perf< stdex::function<int(int)> >: 0.3281178700 [s] {checksum: 0}
+Perf< std::function<int(int)> >: 0.3548180129 [s] {checksum: 0}
+Perf< cxx_function::function<int(int)> >: 0.4592150661 [s] {checksum: 0}
+Perf< multifunction<int(int)> >: 0.4654515421 [s] {checksum: 0}
+Perf< boost::function<int(int)> >: 0.3919911091 [s] {checksum: 0}
+Perf< func::function<int(int)> >: 0.3476964175 [s] {checksum: 0}
+Perf< generic::delegate<int(int)> >: 0.4512685112 [s] {checksum: 0}
+Perf< fu2::function<int(int)> >: 0.4816550517 [s] {checksum: 0}
 
 [lambda]
-Perf< stdex::function<int(int)> >: 0.3134233409 [s] {checksum: 0}
-Perf< std::function<int(int)> >: 0.3365472031 [s] {checksum: 0}
-Perf< multifunction<int(int)> >: 0.3210115082 [s] {checksum: 0}
-Perf< boost::function<int(int)> >: 0.3563981021 [s] {checksum: 0}
-Perf< func::function<int(int)> >: 0.2956556438 [s] {checksum: 0}
-Perf< generic::delegate<int(int)> >: 0.3784445233 [s] {checksum: 0}
-Perf< fu2::function<int(int)> >: 0.4069811907 [s] {checksum: 0}
+Perf< stdex::function<int(int)> >: 0.3051889247 [s] {checksum: 0}
+Perf< std::function<int(int)> >: 0.3503760958 [s] {checksum: 0}
+Perf< cxx_function::function<int(int)> >: 0.3628842478 [s] {checksum: 0}
+Perf< multifunction<int(int)> >: 0.3209757946 [s] {checksum: 0}
+Perf< boost::function<int(int)> >: 0.3372948241 [s] {checksum: 0}
+Perf< func::function<int(int)> >: 0.3142730789 [s] {checksum: 0}
+Perf< generic::delegate<int(int)> >: 0.3952301471 [s] {checksum: 0}
+Perf< fu2::function<int(int)> >: 0.3925488688 [s] {checksum: 0}
 
 [lambda_capture]
-Perf< stdex::function<int(int)> >: 0.3129580604 [s] {checksum: 0}
-Perf< std::function<int(int)> >: 0.4082266319 [s] {checksum: 0}
-Perf< multifunction<int(int)> >: 0.4177444010 [s] {checksum: 0}
-Perf< boost::function<int(int)> >: 0.3543888202 [s] {checksum: 0}
-Perf< func::function<int(int)> >: 0.3088639765 [s] {checksum: 0}
-Perf< generic::delegate<int(int)> >: 0.4495399516 [s] {checksum: 0}
-Perf< fu2::function<int(int)> >: 0.4186756019 [s] {checksum: 0}
+Perf< stdex::function<int(int)> >: 0.3031690860 [s] {checksum: 0}
+Perf< std::function<int(int)> >: 0.3768906388 [s] {checksum: 0}
+Perf< cxx_function::function<int(int)> >: 0.3680196045 [s] {checksum: 0}
+Perf< multifunction<int(int)> >: 0.4951856031 [s] {checksum: 0}
+Perf< boost::function<int(int)> >: 0.3838560743 [s] {checksum: 0}
+Perf< func::function<int(int)> >: 0.3859239130 [s] {checksum: 0}
+Perf< generic::delegate<int(int)> >: 0.4922768049 [s] {checksum: 0}
+Perf< fu2::function<int(int)> >: 0.4635488233 [s] {checksum: 0}
 
 [heavy_functor]
-Perf< stdex::function<int(int)> >: 0.2710863402 [s] {checksum: 0}
-Perf< std::function<int(int)> >: 0.3341798408 [s] {checksum: 0}
-Perf< multifunction<int(int)> >: 0.3170371044 [s] {checksum: 0}
-Perf< boost::function<int(int)> >: 0.3361158427 [s] {checksum: 0}
-Perf< func::function<int(int)> >: 0.2908674792 [s] {checksum: 0}
-Perf< generic::delegate<int(int)> >: 0.3839290086 [s] {checksum: 0}
-Perf< fu2::function<int(int)> >: 0.4583521200 [s] {checksum: 0}
+Perf< stdex::function<int(int)> >: 0.2997751681 [s] {checksum: 0}
+Perf< std::function<int(int)> >: 0.3388301831 [s] {checksum: 0}
+Perf< cxx_function::function<int(int)> >: 0.3435233001 [s] {checksum: 0}
+Perf< multifunction<int(int)> >: 0.3468218580 [s] {checksum: 0}
+Perf< boost::function<int(int)> >: 0.3403156222 [s] {checksum: 0}
+Perf< func::function<int(int)> >: 0.3396359426 [s] {checksum: 0}
+Perf< generic::delegate<int(int)> >: 0.3831424748 [s] {checksum: 0}
+Perf< fu2::function<int(int)> >: 0.4705926588 [s] {checksum: 0}
 
 [non_assignable]
-Perf< stdex::function<int(int)> >: 0.3645773100 [s] {checksum: 0}
-Perf< std::function<int(int)> >: 0.4154650388 [s] {checksum: 0}
-Perf< multifunction<int(int)> >: 0.4756644566 [s] {checksum: 0}
-Perf< boost::function<int(int)> >: 0.3696365149 [s] {checksum: 0}
-Perf< func::function<int(int)> >: 0.3509990570 [s] {checksum: 0}
-Perf< generic::delegate<int(int)> >: 0.4979358380 [s] {checksum: 0}
-Perf< fu2::function<int(int)> >: 0.4458388280 [s] {checksum: 0}
+Perf< stdex::function<int(int)> >: 0.3570794515 [s] {checksum: 0}
+Perf< std::function<int(int)> >: 0.3572237714 [s] {checksum: 0}
+Perf< cxx_function::function<int(int)> >: 0.4494256324 [s] {checksum: 0}
+Perf< multifunction<int(int)> >: 0.4548624289 [s] {checksum: 0}
+Perf< boost::function<int(int)> >: 0.4176397327 [s] {checksum: 0}
+Perf< func::function<int(int)> >: 0.3484343370 [s] {checksum: 0}
+Perf< generic::delegate<int(int)> >: 0.5342012581 [s] {checksum: 0}
+Perf< fu2::function<int(int)> >: 0.4777555342 [s] {checksum: 0}
 ```
 
 #### [overload.cpp](overload.cpp)
 This shows the timing of each multi-method technique.
 ```
-with< no_abstraction >: 0.0904054689 [s] {checksum: 3}
-with< stdex::function<Sig...> >: 0.6127457961 [s] {checksum: 3}
-with< multifunction<Sig...> >: 0.7170735095 [s] {checksum: 3}
-with< virtual_base& >: 0.6407742850 [s] {checksum: 3}
+with< no_abstraction >: 0.0712217144 [s] {checksum: 3}
+with< stdex::function<Sig...> >: 0.5929125805 [s] {checksum: 3}
+with< multifunction<Sig...> >: 0.7295508931 [s] {checksum: 3}
+with< cxx_function::function<Sig...> >: 0.7109221050 [s] {checksum: 3}
+with< virtual_base& >: 0.4269222868 [s] {checksum: 3}
 ```
