@@ -13,6 +13,8 @@
 #include "stdex.hpp"
 #ifndef _WIN32
     #include "cxx_function.hpp"
+#else
+    #include "cxx_function_msvc.hpp"
 #endif
 #include "measure.hpp"  
 
@@ -92,12 +94,6 @@ struct with : test::base
     functor<typename use_base<F>::type> h;
 };
 
-#ifndef _WIN32
-    #define TEST_CXX_FUNCTION (with< cxx_function::function<Sig...> >)
-#else
-    #define TEST_CXX_FUNCTION
-#endif
-
 template<class... Sig>
 void benchmark()
 {
@@ -108,7 +104,7 @@ void benchmark()
         (with< no_abstraction >)
         (with< stdex::function<Sig...> >)
         (with< multifunction<Sig...> >)
-        TEST_CXX_FUNCTION
+        (with< cxx_function::function<Sig...> >)
         (with< virtual_base& >)
     )
 }
