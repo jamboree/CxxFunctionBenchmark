@@ -11,7 +11,7 @@
 #include "delegate.hpp"
 #include "FastFunc.hpp"
 #include "stdex.hpp"
-#include "function.hpp"
+#include "function2.hpp"
 
 #ifndef _WIN32
   #include "cxx_function.hpp"
