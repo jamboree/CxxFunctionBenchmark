@@ -12,6 +12,7 @@
 #include "FastFunc.hpp"
 #include "stdex.hpp"
 #include "function2.hpp"
+#include "fixed_size_function.hpp"
 
 #ifndef _WIN32
   #include "cxx_function.hpp"
@@ -218,6 +219,7 @@ void benchmark1(char const* name)
         (Perf< generic::delegate<int(int)> >)
         (Perf< fu2::function<int(int)> >)
         //(Perf< ssvu::FastFunc<int(int)> >)
+        (Perf< fixed_size_function<int(int)> >)
     )
     std::cout << std::endl;
 }
@@ -237,6 +239,7 @@ void benchmark2(char const* name)
         (Perf< generic::delegate<int(int)> >)
         (Perf< fu2::function<int(int)> >)
         //(Perf< ssvu::FastFunc<int(int)> >)
+        (Perf< fixed_size_function<int(int)> >)
     )
     std::cout << std::endl;
 }
@@ -258,6 +261,7 @@ int main(int /*argc*/, char* /*argv*/[])
     SHOW_SIZE(generic::delegate<int(int)>);
     SHOW_SIZE(ssvu::FastFunc<int(int)>);
     SHOW_SIZE(fu2::function<int(int)>);
+    SHOW_SIZE(fixed_size_function<int(int)>);
     std::cout << std::endl;
     
     BENCHMARK(1, function_pointer);
