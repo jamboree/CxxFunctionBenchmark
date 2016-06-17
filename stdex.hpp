@@ -535,13 +535,13 @@ namespace stdex
     template<class... Sig>
     inline bool operator!=(function<Sig...> const& f, std::nullptr_t)
     {
-        return f;
+        return bool(f);
     }
-    
+
     template<class... Sig>
     inline bool operator!=(std::nullptr_t, function<Sig...> const& f)
     {
-        return f;
+        return bool(f);
     }
 }
 
