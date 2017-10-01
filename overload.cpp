@@ -16,6 +16,7 @@
 #else
     #include "cxx_function_msvc.hpp"
 #endif
+#include "function2.hpp"
 #include "measure.hpp"  
 
 
@@ -105,6 +106,7 @@ void benchmark()
         (with< stdex::function<Sig...> >)
         (with< multifunction<Sig...> >)
         (with< cxx_function::function<Sig...> >)
+        (with< fu2::function<Sig...> >)
         (with< virtual_base& >)
     )
 }
