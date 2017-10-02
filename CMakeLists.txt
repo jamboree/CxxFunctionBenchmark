@@ -1,9 +1,5 @@
 project(CxxFunctionBenchmark CXX)
-cmake_minimum_required(VERSION 2.8)
-
-include(CheckCXXCompilerFlag)
-include(CheckCXXSourceRuns)
-include(CheckIncludeFiles)
+cmake_minimum_required(VERSION 3.2)
 
 if(CMAKE_SIZEOF_VOID_P MATCHES 8)
     set(PLATFORM 64)
@@ -12,13 +8,6 @@ else()
 endif()
 
 if(MSVC)
-  if(${MSVC_VERSION} LESS 1900)
-    message(FATAL_ERROR "You are using an unsupported version of Visual Studio "
-                        "which doesn't support all required C++14 features. "
-                        "(Visual Studio 2015 (Version >= 1900) is required!)")
-
-  endif()
-
   if(PLATFORM EQUAL 64)
     add_definitions("-D_WIN64")
   else()
@@ -35,38 +24,60 @@ if(MSVC)
 
   if(DEFINED ENV{BOOST_ROOT})
     set(BOOST_ROOT $ENV{BOOST_ROOT})
-    set(BOOST_LIBRARYDIR ${BOOST_ROOT}/lib${PLATFORM}-msvc-14.0)
+
+    list(APPEND BOOST_LIBRARYDIR
+        ${BOOST_ROOT}/lib${PLATFORM}-msvc-14.1
+        ${BOOST_ROOT}/lib${PLATFORM}-msvc-14.0)
   else()
     message(FATAL_ERROR "No BOOST_ROOT environment variable could be found! Please make sure it is set and the points to your Boost installation.")
   endif()
-
 else()
-  # Check C++14 Compiler support.
-  CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
-
-  if(NOT COMPILER_SUPPORTS_CXX11)
-    message(FATAL_ERROR "Your compiler has no C++11 capability!")
-  else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-  endif()
-
   # Enable full warnings
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
 endif()
 
-set(Boost_ADDITIONAL_VERSIONS "1.59" "1.59.0")
 find_package(Boost 1.55 REQUIRED)
 
-include_directories(${Boost_INCLUDE_DIRS})
+add_library(base INTERFACE)
+
+target_include_directories(base
+  INTERFACE
+    ${CMAKE_CURRENT_LIST_DIR})
+
+target_compile_features(base
+  INTERFACE
+    cxx_alias_templates
+    cxx_auto_type
+    cxx_constexpr
+    cxx_decltype
+    cxx_decltype_auto
+    cxx_final
+    cxx_lambdas
+    cxx_lambda_init_captures
+    cxx_generic_lambdas
+    cxx_variadic_templates
+    cxx_defaulted_functions
+    cxx_nullptr
+    cxx_trailing_return_types
+    cxx_return_type_deduction)
+
+target_link_libraries(base
+  INTERFACE
+    Boost::boost)
 
 file(GLOB HEADER *.hpp *.h)
 
 add_executable(overload
-  ${HEADER}
-  ${CMAKE_CURRENT_SOURCE_DIR}/overload.cpp
-)
+  ${CMAKE_CURRENT_SOURCE_DIR}/overload.cpp)
+
+target_link_libraries(overload
+  PUBLIC
+    base)
 
 add_executable(various
   ${HEADER}
-  ${CMAKE_CURRENT_SOURCE_DIR}/various.cpp
-)
+  ${CMAKE_CURRENT_SOURCE_DIR}/various.cpp)
+
+target_link_libraries(various
+  PUBLIC
+    base)
