@@ -14,6 +14,7 @@ Currently include:
 - [cxx_function::function](https://github.com/potswa/cxx_function) - By David Krauss
 - [fu2::function](http://naios.github.io/function2/) - By Denis Blank
 - [fixed_size_function](https://github.com/pmed/fixed_size_function) - By Pavel Medvedev
+- [gnr::forwarder](forwarder.hpp) - [here](https://github.com/user1095108/generic).
 
 ### Sample Result
 Compiled with `g++ -O3 -std=c++14 -DNDEBUG` (64-bit/g++5.3.0/MinGW)
