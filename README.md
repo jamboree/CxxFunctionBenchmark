@@ -9,11 +9,12 @@ Currently include:
 - std::function - [Standard](http://en.cppreference.com/w/cpp/utility/functional/function).
 - boost::function - The one from [Boost](http://www.boost.org/doc/libs/1_55_0/doc/html/function.html).
 - [func::function](function.h) - From this [blog](http://probablydance.com/2013/01/13/a-faster-implementation-of-stdfunction/).
-- [generic::delegate](delegate.hpp) - [Fast delegate in C++11](http://codereview.stackexchange.com/questions/14730/impossibly-fast-delegate-in-c11), also see [here](https://code.google.com/p/cpppractice/source/browse/trunk/).
+- [generic::delegate](delegate.hpp) - [Fast delegate in C++11](http://codereview.stackexchange.com/questions/14730/impossibly-fast-delegate-in-c11), also see [here](https://github.com/user1095108/generic).
 - [~~ssvu::FastFunc~~](FastFunc.hpp) - Another Don Clugston's FastDelegate, as shown [here](https://groups.google.com/a/isocpp.org/forum/#!topic/std-discussion/QgvHF7YMi3o).
 - [cxx_function::function](https://github.com/potswa/cxx_function) - By David Krauss
 - [fu2::function](http://naios.github.io/function2/) - By Denis Blank
 - [fixed_size_function](https://github.com/pmed/fixed_size_function) - By Pavel Medvedev
+- [gnr::forwarder](forwarder.hpp) - [here](https://github.com/user1095108/generic).
 
 ### Sample Result
 Compiled with `g++ -O3 -std=c++14 -DNDEBUG` (64-bit/g++5.3.0/MinGW)

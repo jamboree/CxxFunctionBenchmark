@@ -1,6 +1,6 @@
-#pragma once
-#ifndef LIGHTPTR_HPP
-# define LIGHTPTR_HPP
+#ifndef GNR_LIGHTPTR_HPP
+# define GNR_LIGHTPTR_HPP
+# pragma once
 
 #include <cassert>
 
@@ -8,73 +8,42 @@
 
 #include <memory>
 
-#include <utility>
-
 #include <type_traits>
 
-namespace generic
+#include <utility>
+
+namespace gnr
 {
 
-namespace detail
+namespace
 {
-  using counter_type = unsigned;
 
-  using atomic_type = ::std::atomic<counter_type>;
+using counter_type = unsigned;
 
-  template <typename T>
-  using deleter_type = void (*)(T*);
+using atomic_counter_type = std::atomic<counter_type>;
 
-  template <typename U>
-  struct ref_type
-  {
-    using type = U&;
-  };
+template <typename T>
+using deleter_type = void (*)(T*);
 
-  template <>
-  struct ref_type<void>
-  {
-    using type = void;
-  };
+template <typename U>
+struct ref_type
+{
+  using type = U&;
+};
 
-  template <typename T>
-  inline void dec_ref(atomic_type* const counter_ptr,
-    T* const ptr, deleter_type<T> const deleter)
-  {
-    if (counter_ptr && (counter_type(1) ==
-      counter_ptr->fetch_sub(counter_type(1), ::std::memory_order_relaxed)))
-    {
-      delete counter_ptr;
+template <>
+struct ref_type<void>
+{
+  using type = void;
+};
 
-      typedef char type_must_be_complete[sizeof(T) ? 1 : -1];
-      (void)sizeof(type_must_be_complete);
-      deleter(ptr);
-    }
-    // else do nothing
-  }
+template <typename U>
+using ref_type_t = typename ref_type<U>::type;
 
-  template <>
-  inline void dec_ref(atomic_type* const counter_ptr,
-    void* const ptr, deleter_type<void> const deleter)
-  {
-    if (counter_ptr && (counter_type(1) ==
-      counter_ptr->fetch_sub(counter_type(1), ::std::memory_order_relaxed)))
-    {
-      delete counter_ptr;
-
-      deleter(ptr);
-    }
-    // else do nothing
-  }
-
-  inline void inc_ref(atomic_type* const counter_ptr)
-  {
-    //assert(counter_ptr);
-    counter_ptr->fetch_add(counter_type(1), ::std::memory_order_relaxed);
-  }
 }
 
 template <typename T>
-struct light_ptr
+class light_ptr
 {
   template <typename U, typename V>
   struct deletion_type
@@ -88,60 +57,143 @@ struct light_ptr
     using type = V[];
   };
 
-  template <typename U, typename V, ::std::size_t N>
+  template <typename U, typename V, std::size_t N>
   struct deletion_type<U[N], V>
   {
     using type = V[];
   };
 
-  template <typename U>
-  struct remove_array
+  template <typename ...A>
+  using deletion_type_t = typename deletion_type<A...>::type;
+
+  using element_type = std::remove_extent_t<T>;
+
+  class counter_base
   {
-    using type = U;
+    friend class light_ptr;
+
+    using invoker_type = void (*)(counter_base*, element_type*) noexcept;
+
+    atomic_counter_type counter_{};
+
+    invoker_type const invoker_;
+
+  protected:
+    explicit counter_base(counter_type const c,
+      invoker_type const invoker) noexcept :
+      counter_(c),
+      invoker_(invoker)
+    {
+    }
+
+  public:
+    template <typename U>
+    std::enable_if_t<!std::is_void<U>{}> dec_ref(U* const ptr) noexcept
+    {
+      if (counter_type(1) ==
+        counter_.fetch_sub(counter_type(1), std::memory_order_relaxed))
+      {
+        using type_must_be_complete = char[sizeof(U) ? 1 : -1];
+        (void)sizeof(type_must_be_complete);
+        invoker_(this, ptr);
+      }
+      // else do nothing
+    }
+
+    template <typename U>
+    std::enable_if_t<std::is_void<U>{}> dec_ref(U* const ptr) noexcept
+    {
+      if (counter_type(1) ==
+        counter_.fetch_sub(counter_type(1), std::memory_order_relaxed))
+      {
+        invoker_(this, ptr);
+      }
+      // else do nothing
+    }
+
+    void inc_ref() noexcept
+    {
+      counter_.fetch_add(counter_type(1), std::memory_order_relaxed);
+    }
   };
 
-  template <typename U>
-  struct remove_array<U[]>
+  template <typename D>
+  class counter : public counter_base
   {
-    using type = U;
+    std::decay_t<D> const d_;
+
+    static void invoked(counter_base* const ptr,
+      element_type* const e) noexcept
+    {
+      auto const c(static_cast<counter<D>*>(ptr));
+
+      // invoke deleter on the element
+      c->d_(e);
+
+      // delete from a static member function
+      delete c;
+    }
+
+  public:
+    explicit counter(counter_type const c, D&& d) noexcept :
+      counter_base(c, invoked),
+      d_(std::forward<D>(d))
+    {
+    }
   };
 
-  template <typename U, ::std::size_t N>
-  struct remove_array<U[N]>
-  {
-    using type = U;
-  };
+private:
+  template <typename U> friend struct std::hash;
 
-  using element_type = typename remove_array<T>::type;
+  counter_base* counter_{};
 
-  using deleter_type = detail::deleter_type<element_type>;
+  element_type* ptr_;
 
+public:
   light_ptr() = default;
 
   template <typename U>
-  explicit light_ptr(U* const p, deleter_type const d = default_deleter<U>)
+  explicit light_ptr(U* const p)
   {
-    reset(p, d);
+    reset(p);
   }
 
-  ~light_ptr() { detail::dec_ref(counter_ptr_, ptr_, deleter_); }
+  template <typename U, typename D>
+  explicit light_ptr(U* const p, D&& d)
+  {
+    reset(p, std::forward<D>(d));
+  }
 
-  light_ptr(light_ptr const& other) { *this = other; }
+  light_ptr(light_ptr const& other) noexcept { *this = other; }
 
-  light_ptr(light_ptr&& other) noexcept { *this = ::std::move(other); }
+  light_ptr(light_ptr&& other) noexcept { *this = std::move(other); }
 
-  light_ptr& operator=(light_ptr const& rhs)
+  ~light_ptr() noexcept
+  {
+    if (counter_)
+    {
+      counter_->dec_ref(ptr_);
+    }
+    // else do nothing
+  }
+
+  light_ptr& operator=(light_ptr const& rhs) noexcept
   {
     if (*this != rhs)
     {
-      detail::dec_ref(counter_ptr_, ptr_, deleter_);
+      if (counter_)
+      {
+        counter_->dec_ref(ptr_);
+      }
+      // else do nothing
 
-      counter_ptr_ = rhs.counter_ptr_;
+      if ((counter_ = rhs.counter_))
+      {
+        counter_->inc_ref();
+      }
+      // else do nothing
+
       ptr_ = rhs.ptr_;
-
-      deleter_ = rhs.deleter_;
-
-      detail::inc_ref(counter_ptr_);
     }
     // else do nothing
 
@@ -150,31 +202,29 @@ struct light_ptr
 
   light_ptr& operator=(light_ptr&& rhs) noexcept
   {
-    if (*this != rhs)
-    {
-      counter_ptr_ = rhs.counter_ptr_;
-      ptr_ = rhs.ptr_;
+    counter_ = rhs.counter_;
+    rhs.counter_ = nullptr;
 
-      deleter_ = rhs.deleter_;
-
-      rhs.counter_ptr_ = nullptr;
-      rhs.ptr_ = nullptr;
-    }
-    // else do nothing
+    ptr_ = rhs.ptr_;
 
     return *this;
   }
 
-  light_ptr& operator=(::std::nullptr_t const) noexcept { reset(); }
+  light_ptr& operator=(std::nullptr_t const) noexcept
+  {
+    reset();
+
+    return *this;
+  }
 
   bool operator<(light_ptr const& rhs) const noexcept
   {
-    return get() < rhs.get();
+    return counter_ < rhs.counter_;
   }
 
   bool operator==(light_ptr const& rhs) const noexcept
   {
-    return counter_ptr_ == rhs.counter_ptr_;
+    return counter_ == rhs.counter_;
   }
 
   bool operator!=(light_ptr const& rhs) const noexcept
@@ -182,90 +232,93 @@ struct light_ptr
     return !operator==(rhs);
   }
 
-  bool operator==(::std::nullptr_t const) const noexcept
+  bool operator==(std::nullptr_t const) const noexcept { return !counter_; }
+
+  bool operator!=(std::nullptr_t const) const noexcept { return counter_; }
+
+  explicit operator bool() const noexcept { return counter_; }
+
+  ref_type_t<T> operator*() const noexcept
   {
-    return !ptr_;
+    return *reinterpret_cast<T*>(ptr_);
   }
 
-  bool operator!=(::std::nullptr_t const) const noexcept
+  auto operator->() const noexcept { return reinterpret_cast<T*>(ptr_); }
+
+  template <typename U = T,
+    typename = std::enable_if_t<std::is_array<U>{}>
+  >
+  ref_type_t<element_type> operator[](std::size_t const i) const noexcept
   {
-    return ptr_;
+    return ptr_[i];
   }
 
-  explicit operator bool() const noexcept { return ptr_; }
+  auto get() const noexcept { return ptr_; }
 
-  typename detail::ref_type<T>::type
-  operator*() const noexcept
+  void reset() noexcept { reset(nullptr); }
+
+  void reset(std::nullptr_t const) noexcept
   {
-    return *static_cast<T*>(static_cast<void*>(ptr_));
-  }
+    if (counter_)
+    {
+      counter_->dec_ref(ptr_);
 
-  T* operator->() const noexcept
-  {
-    return static_cast<T*>(static_cast<void*>(ptr_));
-  }
-
-  element_type* get() const noexcept { return ptr_; }
-
-  void reset() { reset(nullptr); }
-
-  void reset(::std::nullptr_t const)
-  {
-    detail::dec_ref(counter_ptr_, ptr_, deleter_);
-
-    counter_ptr_ = nullptr;
-    ptr_ = nullptr;
+      counter_ = nullptr;
+    }
+    // else do nothing
   }
 
   template <typename U>
-  void reset(U* const p, deleter_type const d = default_deleter<U>)
+  void reset(U* const p)
   {
-    detail::dec_ref(counter_ptr_, ptr_, deleter_);
+    reset(p,
+      [](element_type* const p) noexcept {
+        std::default_delete<deletion_type_t<T, U>>()(
+          static_cast<U*>(p)
+        );
+      }
+    );
+  }
 
-    counter_ptr_ = new detail::atomic_type(detail::counter_type(1));
+  template <typename U, typename D>
+  void reset(U* const p, D&& d)
+  {
+    if (counter_)
+    {
+      counter_->dec_ref(ptr_);
+    }
+    // else do nothing
+
+    counter_ = p ?
+      new counter<D>(counter_type(1), std::forward<D>(d)) :
+      nullptr;
+
     ptr_ = p;
-
-    deleter_ = d;
   }
 
   void swap(light_ptr& other) noexcept
   {
-    ::std::swap(counter_ptr_, other.counter_ptr_);
-    ::std::swap(ptr_, other.ptr_);
-    ::std::swap(deleter_, other.deleter_);
+    std::swap(counter_, other.counter_);
+    std::swap(ptr_, other.ptr_);
   }
 
   bool unique() const noexcept
   {
-    return detail::counter_type(1) == use_count();
+    return counter_type(1) == use_count();
   }
 
-  detail::counter_type use_count() const noexcept
+  counter_type use_count() const noexcept
   {
-    return counter_ptr_ ?
-      counter_ptr_->load(::std::memory_order_relaxed) :
-      detail::counter_type{};
+    return counter_ ?
+      counter_->counter_.load(std::memory_order_relaxed) :
+      counter_type{};
   }
-
-  template <typename U>
-  static void default_deleter(element_type* const p)
-  {
-    ::std::default_delete<typename deletion_type<T, U>::type>()(
-      static_cast<U*>(p));
-  }
-
-private:
-  detail::atomic_type* counter_ptr_{};
-
-  element_type* ptr_{};
-
-  deleter_type deleter_;
 };
 
-template<class T, class ...Args>
-inline light_ptr<T> make_light(Args&& ...args)
+template<class T, typename ...A>
+inline light_ptr<T> make_light(A&& ...args)
 {
-  return light_ptr<T>(new T(::std::forward<Args>(args)...));
+  return light_ptr<T>(new T(std::forward<A>(args)...));
 }
 
 }
@@ -273,13 +326,13 @@ inline light_ptr<T> make_light(Args&& ...args)
 namespace std
 {
   template <typename T>
-  struct hash<::generic::light_ptr<T> >
+  struct hash<gnr::light_ptr<T> >
   {
-    size_t operator()(::generic::light_ptr<T> const& l) const noexcept
+    size_t operator()(gnr::light_ptr<T> const& l) const noexcept
     {
-      return hash<typename ::generic::light_ptr<T>::element_type*>()(l.get());
+      return hash<typename gnr::light_ptr<T>::element_type*>()(l.ptr_);
     }
   };
 }
 
-#endif // LIGHTPTR_HPP
+#endif // GNR_LIGHTPTR_HPP

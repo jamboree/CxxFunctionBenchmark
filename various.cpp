@@ -13,6 +13,7 @@
 #include "stdex.hpp"
 #include "function2.hpp"
 #include "fixed_size_function.hpp"
+#include "forwarder.hpp"
 
 #ifndef _WIN32
   #include "cxx_function.hpp"
@@ -77,7 +78,8 @@ struct A
 struct no_abstraction;
 
 typedef generic::delegate<int(int)> generic_delegate;
-        
+typedef gnr::forwarder<int(int), 48> gnr_forwarder;
+
 namespace cases
 {
     template<class F>
@@ -220,6 +222,7 @@ void benchmark1(char const* name)
         (Perf< fu2::function<int(int)> >)
         //(Perf< ssvu::FastFunc<int(int)> >)
         (Perf< fixed_size_function<int(int)> >)
+        (Perf< gnr_forwarder >)
     )
     std::cout << std::endl;
 }
@@ -240,6 +243,7 @@ void benchmark2(char const* name)
         (Perf< fu2::function<int(int)> >)
         //(Perf< ssvu::FastFunc<int(int)> >)
         (Perf< fixed_size_function<int(int)> >)
+	(Perf< gnr_forwarder >)
     )
     std::cout << std::endl;
 }
@@ -262,6 +266,7 @@ int main(int /*argc*/, char* /*argv*/[])
     SHOW_SIZE(ssvu::FastFunc<int(int)>);
     SHOW_SIZE(fu2::function<int(int)>);
     SHOW_SIZE(fixed_size_function<int(int)>);
+    SHOW_SIZE(gnr_forwarder);
     std::cout << std::endl;
     
     BENCHMARK(1, function_pointer);
