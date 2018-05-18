@@ -20,7 +20,7 @@ Currently include:
 ### Sample Result
 Compiled with `g++ -O3 -std=c++17 -DNDEBUG` (64-bit/g++6.3.0/Debian)
 
-See also [Wandbox](https://wandbox.org/permlink/3ZeiJHMaGcJJQnjg), though it limits the execution-time so that line 20 needs a small number e.g. `#define MAX_REPEAT 5000`
+See also [Wandbox](https://wandbox.org/permlink/joY05JLnAuipFJDm), though it limits the execution-time so that line 20 needs a small number e.g. `#define MAX_REPEAT 5000`
 
 #### [various.cpp](various.cpp)
 The size of each implementation is shown in the `[size]` section.
