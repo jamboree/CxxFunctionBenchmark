@@ -128,9 +128,6 @@ public:
     /// @pre The function object is valid, i.e. has functor assigned to it.
     TRet operator()(TArgs... args) const;
 
-    /// @brief Non-const version of operator().
-    TRet operator()(TArgs... args);
-
 private:
 
     /// @cond DOCUMENT_STATIC_FUNCTION_INVOKER
@@ -139,7 +136,6 @@ private:
     public:
         virtual ~Invoker();
         virtual TRet exec(TArgs... args) const = 0;
-        virtual TRet exec(TArgs... args) = 0;
         virtual void copyTo(void* other) const = 0;
         virtual void moveTo(void* other) = 0;
     private:
@@ -155,11 +151,10 @@ private:
         InvokerBound(InvokerBound&&) = default;
         virtual ~InvokerBound();
         virtual TRet exec(TArgs... args) const;
-        virtual TRet exec(TArgs... args);
         virtual void copyTo(void* other) const;
         virtual void moveTo(void* other);
     private:
-        TBound func_;
+        mutable TBound func_;
     };
     /// @endcond
 
@@ -323,15 +318,6 @@ TRet StaticFunction<TRet (TArgs...), TSize>::operator()(
     return invoker->exec(std::forward<TArgs>(args)...);
 }
 
-template <std::size_t TSize, typename TRet, typename... TArgs>
-TRet StaticFunction<TRet (TArgs...), TSize>::operator()(
-    TArgs... args)
-{
-    GASSERT(valid_);
-    auto invoker = getInvoker();
-    return invoker->exec(std::forward<TArgs>(args)...);
-}
-
 /// @cond DOCUMENT_STATIC_FUNCTION_INVOKER
 template <std::size_t TSize, typename TRet, typename... TArgs>
 StaticFunction<TRet (TArgs...), TSize>::Invoker::~Invoker()
@@ -357,14 +343,6 @@ template <std::size_t TSize, typename TRet, typename... TArgs>
 template <typename TBound>
 TRet StaticFunction<TRet (TArgs...), TSize>::InvokerBound<TBound>::exec(
     TArgs... args) const
-{
-    return func_(std::forward<TArgs>(args)...);
-}
-
-template <std::size_t TSize, typename TRet, typename... TArgs>
-template <typename TBound>
-TRet StaticFunction<TRet (TArgs...), TSize>::InvokerBound<TBound>::exec(
-    TArgs... args)
 {
     return func_(std::forward<TArgs>(args)...);
 }
