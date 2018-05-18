@@ -2,14 +2,19 @@ project(CxxFunctionBenchmark CXX)
 cmake_minimum_required(VERSION 3.2)
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
-    include(highest_supp_cmake_cxx_standard.cmake)
+    if(${CMAKE_VERSION} VERSION_LESS "3.8.0")
+      set(CMAKE_CXX_STANDARD 14)
+      message("# setting CMAKE_CXX_STANDARD to ${CMAKE_CXX_STANDARD}")
+    else()
+      include(highest_supp_cmake_cxx_standard.cmake)
 
-    list_of_supp_cmake_cxx_stds(lst_supp_cxx_stds)
-    message("# CXX standards supported by currently running cmake (found via command:  cmake --help-property CXX_STANDARD): ${lst_supp_cxx_stds}")
-
-    highest_supp_cmake_cxx_standard(hightest_cxx_std)
-    set(CMAKE_CXX_STANDARD ${hightest_cxx_std})
-    message("# setting CMAKE_CXX_STANDARD to hightest supported by your compiler: ${hightest_cxx_std}")
+      list_of_supp_cmake_cxx_stds(lst_supp_cxx_stds)
+      message("# CXX standards supported by currently running cmake (found via command:  cmake --help-property CXX_STANDARD): ${lst_supp_cxx_stds}")
+      
+      highest_supp_cmake_cxx_standard(hightest_cxx_std)
+      set(CMAKE_CXX_STANDARD ${hightest_cxx_std})
+      message("# setting CMAKE_CXX_STANDARD to hightest supported by your compiler: ${hightest_cxx_std}")
+    endif()
 endif()
 
 if(NOT DEFINED CMAKE_CXX_EXTENSIONS)
