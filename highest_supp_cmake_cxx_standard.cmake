@@ -23,7 +23,7 @@
 
 # For more information, please refer to <http://unlicense.org>
 
-
+cmake_minimum_required(VERSION 3.8)
 
 function(lines_to_list  out_list_var  str)
   # https://cmake.org/pipermail/cmake/2007-May/014222.html
