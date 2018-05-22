@@ -15,6 +15,8 @@
 #include "fixed_size_function.hpp"
 #include "forwarder.hpp"
 #include "StaticFunction.h"
+#include "Function.h"
+#include "FastDelegate.h"
 
 #ifndef _WIN32
   #include "cxx_function.hpp"
@@ -81,6 +83,8 @@ struct no_abstraction;
 typedef generic::delegate<int(int)> generic_delegate;
 typedef gnr::forwarder<int(int), 48> gnr_forwarder;
 typedef embxx::util::StaticFunction<int(int), 48> embxx_util_StaticFunction;
+typedef Function<int(int), 56> Function_;
+typedef fastdelegate::FastDelegate1<int, int> FastDelegate1;
 
 namespace cases
 {
@@ -207,6 +211,18 @@ namespace cases
     };
 }
 
+#ifdef CLUGSTON
+#define CLUGSTON_FUNCTION        (Perf< FastDelegate1 >)
+#else
+#define CLUGSTON_FUNCTION        /* nothing */
+#endif
+
+#ifdef SSVU
+#define SSVU_FUNCTION           (Perf< ssvu::FastFunc<int(int)> >)
+#else
+#define SSVU_FUNCTION            /* nothing */
+#endif
+
 template<template<class> class Perf>
 void benchmark1(char const* name)
 {
@@ -222,10 +238,12 @@ void benchmark1(char const* name)
         (Perf< func::function<int(int)> >)
         (Perf< generic::delegate<int(int)> >)
         (Perf< fu2::function<int(int)> >)
-        //(Perf< ssvu::FastFunc<int(int)> >)
+        CLUGSTON_FUNCTION
+        SSVU_FUNCTION
         (Perf< fixed_size_function<int(int)> >)
         (Perf< gnr_forwarder >)
-	(Perf< embxx_util_StaticFunction >)
+        (Perf< embxx_util_StaticFunction >)
+        (Perf< Function_ >)
     )
     std::cout << std::endl;
 }
@@ -244,10 +262,12 @@ void benchmark2(char const* name)
         (Perf< func::function<int(int)> >)
         (Perf< generic::delegate<int(int)> >)
         (Perf< fu2::function<int(int)> >)
-        //(Perf< ssvu::FastFunc<int(int)> >)
+        CLUGSTON_FUNCTION
+        SSVU_FUNCTION
         (Perf< fixed_size_function<int(int)> >)
-	(Perf< gnr_forwarder >)
-	(Perf< embxx_util_StaticFunction >)
+        (Perf< gnr_forwarder >)
+        (Perf< embxx_util_StaticFunction >)
+        (Perf< Function_ >)
     )
     std::cout << std::endl;
 }
@@ -267,21 +287,29 @@ int main(int /*argc*/, char* /*argv*/[])
     SHOW_SIZE(boost::function<int(int)>);
     SHOW_SIZE(func::function<int(int)>);
     SHOW_SIZE(generic::delegate<int(int)>);
+    SHOW_SIZE(FastDelegate1);
     SHOW_SIZE(ssvu::FastFunc<int(int)>);
     SHOW_SIZE(fu2::function<int(int)>);
     SHOW_SIZE(fixed_size_function<int(int)>);
     SHOW_SIZE(gnr_forwarder);
     SHOW_SIZE(embxx_util_StaticFunction);
+    SHOW_SIZE(Function_);
     std::cout << std::endl;
     
     BENCHMARK(1, function_pointer);
+#ifndef CLUGSTON
+
+#ifndef SSVU
     BENCHMARK(1, compile_time_function_pointer);
     BENCHMARK(1, compile_time_delegate);
-    BENCHMARK(2, lambda);
-    BENCHMARK(2, lambda_capture);
     BENCHMARK(2, heavy_functor);
     BENCHMARK(2, non_assignable);
+#endif
+    BENCHMARK(2, lambda_capture);
 
+#endif
+    BENCHMARK(2, lambda);
+    
     // This is ultimately responsible for preventing all the test code
     // from being optimized away.  Change this to return 0 and you
     // unplug the whole test's life support system.

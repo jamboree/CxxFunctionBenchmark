@@ -10,12 +10,14 @@ Currently include:
 - boost::function - The one from [Boost](http://www.boost.org/doc/libs/1_55_0/doc/html/function.html).
 - [func::function](function.h) - From this [blog](http://probablydance.com/2013/01/13/a-faster-implementation-of-stdfunction/).
 - [generic::delegate](delegate.hpp) - [Fast delegate in C++11](http://codereview.stackexchange.com/questions/14730/impossibly-fast-delegate-in-c11), also see [here](https://github.com/user1095108/generic).
-- [~~ssvu::FastFunc~~](FastFunc.hpp) - Another Don Clugston's FastDelegate, as shown [here](https://gist.github.com/SuperV1234/6462221) and [here](https://groups.google.com/a/isocpp.org/forum/#!topic/std-discussion/QgvHF7YMi3o).
+- [~~fastdelegate::FastDelegate~~](clugston_styled/FastDelegate.h) - By Don Clugston, see [here](https://www.codeproject.com/Articles/7150/Member-Function-Pointers-and-the-Fastest-Possible)
+- [~~ssvu::FastFunc~~](clugston_styled/FastFunc.hpp) - Another Don Clugston's FastDelegate, as shown [here](https://gist.github.com/SuperV1234/6462221) and [here](https://groups.google.com/a/isocpp.org/forum/#!topic/std-discussion/QgvHF7YMi3o).
 - [cxx_function::function](https://github.com/potswa/cxx_function) - By David Krauss
 - [fu2::function](http://naios.github.io/function2/) - By Denis Blank
 - [fixed_size_function](https://github.com/pmed/fixed_size_function) - By Pavel Medvedev
 - [gnr::forwarder](forwarder.hpp) - [here](https://github.com/user1095108/generic).
 - [embxx::util::StaticFunction](StaticFunction.h) - By Alex Robenko, see [here](https://github.com/arobenko/embxx) - either on master or develop branch.
+- [Function](Function.h) - By Erik Rigtorp, see [here](https://github.com/rigtorp/Function)
 
 ### Sample Result
 Compiled with `g++ -O3 -std=c++17 -DNDEBUG` (64-bit/g++6.3.0/Debian)

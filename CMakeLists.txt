@@ -27,6 +27,19 @@ if(NOT DEFINED CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE)
     message("# setting CMAKE_BUILD_TYPE to ${CMAKE_BUILD_TYPE}")
 endif()
 
+
+include_directories(SYSTEM clugston_styled) # ignore warnings from FastDelegate.h and FastFunc.hpp
+
+option(CLUGSTON "Include Clugston's FastDelegate" OFF)
+if (CLUGSTON)
+  add_definitions(-DCLUGSTON)
+endif()
+
+option(SSVU "Include ssvu::FastFunc" OFF)
+if (SSVU)
+  add_definitions(-DSSVU)
+endif()
+
 if(CMAKE_SIZEOF_VOID_P MATCHES 8)
     set(PLATFORM 64)
 else()
