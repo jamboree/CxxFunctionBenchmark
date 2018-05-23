@@ -2,18 +2,42 @@ project(CxxFunctionBenchmark CXX)
 cmake_minimum_required(VERSION 3.2)
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 14)
-    message("setting CMAKE_CXX_STANDARD to ${CMAKE_CXX_STANDARD}")
+    if(${CMAKE_VERSION} VERSION_LESS "3.8.0")
+      set(CMAKE_CXX_STANDARD 14)
+      message("# setting CMAKE_CXX_STANDARD to ${CMAKE_CXX_STANDARD}")
+    else()
+      include(highest_supp_cmake_cxx_standard.cmake)
+
+      list_of_supp_cmake_cxx_stds(lst_supp_cxx_stds)
+      message("# CXX standards supported by currently running cmake (found via command:  cmake --help-property CXX_STANDARD): ${lst_supp_cxx_stds}")
+      
+      highest_supp_cmake_cxx_standard(hightest_cxx_std)
+      set(CMAKE_CXX_STANDARD ${hightest_cxx_std})
+      message("# setting CMAKE_CXX_STANDARD to hightest supported by your compiler: ${hightest_cxx_std}")
+    endif()
 endif()
 
 if(NOT DEFINED CMAKE_CXX_EXTENSIONS)
     set(CMAKE_CXX_EXTENSIONS OFF)
-    message("setting CMAKE_CXX_EXTENSIONS to ${CMAKE_CXX_EXTENSIONS}")
+    message("# setting CMAKE_CXX_EXTENSIONS to ${CMAKE_CXX_EXTENSIONS}")
 endif()
 
 if(NOT DEFINED CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
-    message("setting CMAKE_BUILD_TYPE to ${CMAKE_BUILD_TYPE}")
+    message("# setting CMAKE_BUILD_TYPE to ${CMAKE_BUILD_TYPE}")
+endif()
+
+
+include_directories(SYSTEM clugston_styled) # ignore warnings from FastDelegate.h and FastFunc.hpp
+
+option(CLUGSTON "Include Clugston's FastDelegate" OFF)
+if (CLUGSTON)
+  add_definitions(-DCLUGSTON)
+endif()
+
+option(SSVU "Include ssvu::FastFunc" OFF)
+if (SSVU)
+  add_definitions(-DSSVU)
 endif()
 
 if(CMAKE_SIZEOF_VOID_P MATCHES 8)
