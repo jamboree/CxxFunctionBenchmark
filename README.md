@@ -4,7 +4,7 @@ C++ Function Benchmark
 Benchmark for various C++ function implementations.
 
 Currently include:
-- [stdex::function](stdex.hpp) - A multi-signature function implementation authored by me :)
+- [stdex::function](stdex.hpp) - A multi-signature function implementation by [@jamboree](https://github.com/jamboree).
 - multifunction - Example from [Boost.TypeErasure](http://www.boost.org/doc/html/boost_typeerasure/examples.html#boost_typeerasure.examples.multifunction), another multi-signature function.
 - std::function - [Standard](http://en.cppreference.com/w/cpp/utility/functional/function).
 - boost::function - The one from [Boost](http://www.boost.org/doc/libs/1_55_0/doc/html/function.html).
@@ -21,6 +21,8 @@ Currently include:
 
 ### Sample Result
 Compiled with `g++ -O3 -std=c++17 -DNDEBUG` (64-bit/g++6.3.0/Debian)
+
+Provided by [@user706](https://github.com/user706) (Intel Core i7-6700K, with -O3 -std=c++17 -NDEBUG on gcc-8.1.0).
 
 #### [various.cpp](various.cpp)
 The size of each implementation is shown in the `[size]` section.
