@@ -18,6 +18,7 @@ Currently include:
 - [gnr::forwarder](forwarder.hpp) - [here](https://github.com/user1095108/generic).
 - [embxx::util::StaticFunction](StaticFunction.h) - By Alex Robenko, see [here](https://github.com/arobenko/embxx) - either on master or develop branch.
 - [Function](Function.h) - By Erik Rigtorp, see [here](https://github.com/rigtorp/Function)
+- [folly::Function](folly/Function.h) - From Facebook Folly; see [here](https://github.com/facebook/folly/blob/master/folly/docs/Function.md)
 
 ### Sample Result
 Compiled with `g++ -O3 -std=c++17 -DNDEBUG` (64-bit/g++6.3.0/Debian)
