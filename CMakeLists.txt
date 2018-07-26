@@ -40,6 +40,14 @@ if (SSVU)
   add_definitions(-DSSVU)
 endif()
 
+option(BDE "Include Bloomberg BDE" OFF)
+if (BDE)
+  find_package(Git)
+  execute_process (COMMAND ${GIT_EXECUTABLE} submodule update --recursive --init
+                   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+  add_definitions(-DADD_BDE)
+endif()
+
 if(CMAKE_SIZEOF_VOID_P MATCHES 8)
     set(PLATFORM 64)
 else()
@@ -104,6 +112,10 @@ target_link_libraries(base
   INTERFACE
     Boost::boost)
 
+if (BDE)
+  add_subdirectory(bde)
+endif()
+  
 file(GLOB HEADER *.hpp *.h)
 
 add_executable(overload
@@ -119,4 +131,12 @@ add_executable(various
 
 target_link_libraries(various
   PUBLIC
-    base)
+  base)
+
+if (BDE)
+target_link_libraries(various
+  PUBLIC
+  bsls1 bslma1 bslscm1 bslstl1)
+endif()
+
+

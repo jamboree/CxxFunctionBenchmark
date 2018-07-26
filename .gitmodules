@@ -1,0 +1,3 @@
+[submodule "bde/bde"]
+	path = bde/bde
+	url = https://github.com/bloomberg/bde.git
