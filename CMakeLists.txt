@@ -31,11 +31,9 @@ if(NOT DEFINED CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE)
     message("# setting CMAKE_BUILD_TYPE to ${CMAKE_BUILD_TYPE}")
 endif()
 
-
-include_directories(SYSTEM clugston_styled) # ignore warnings from FastDelegate.h and FastFunc.hpp
-
 option(CLUGSTON "Include Clugston's FastDelegate" OFF)
 if (CLUGSTON)
+  include_directories(SYSTEM clugston_styled) # ignore warnings from FastDelegate.h and FastFunc.hpp
   add_definitions(-DADD_CLUGSTON)
 endif()
 
@@ -60,41 +58,6 @@ if (BDE)
   execute_process (COMMAND ${GIT_EXECUTABLE} submodule update --recursive --init
                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
   add_definitions(-DADD_BDE)
-endif()
-
-if(CMAKE_SIZEOF_VOID_P MATCHES 8)
-    set(PLATFORM 64)
-else()
-    set(PLATFORM 32)
-endif()
-
-if(MSVC)
-  if(PLATFORM EQUAL 64)
-    add_definitions("-D_WIN64")
-  else()
-    # ...
-  endif()
-
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
-
-  set(BOOST_DEBUG ON)
-
-  set(Boost_USE_STATIC_LIBS ON)
-  set(Boost_USE_MULTITHREADED ON)
-  set(Boost_USE_STATIC_RUNTIME OFF)
-
-  if(DEFINED ENV{BOOST_ROOT})
-    set(BOOST_ROOT $ENV{BOOST_ROOT})
-
-    list(APPEND BOOST_LIBRARYDIR
-        ${BOOST_ROOT}/lib${PLATFORM}-msvc-14.1
-        ${BOOST_ROOT}/lib${PLATFORM}-msvc-14.0)
-  else()
-    message(FATAL_ERROR "No BOOST_ROOT environment variable could be found! Please make sure it is set and the points to your Boost installation.")
-  endif()
-else()
-  # Enable full warnings
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
 endif()
 
 find_package(Boost 1.55 REQUIRED)
@@ -129,8 +92,6 @@ target_link_libraries(base
 if (BDE)
   add_subdirectory(bde)
 endif()
-  
-file(GLOB HEADER *.hpp *.h)
 
 add_executable(overload
   ${CMAKE_CURRENT_SOURCE_DIR}/overload.cpp)
@@ -140,7 +101,6 @@ target_link_libraries(overload
     base)
 
 add_executable(various
-  ${HEADER}
   ${CMAKE_CURRENT_SOURCE_DIR}/various.cpp)
 
 target_link_libraries(various
