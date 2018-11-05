@@ -22,9 +22,7 @@ Currently include:
 - [bsl::function](bde/groups/bsl/bslstl/bslstl_function.h) - From Bloomberg BDE; see [here](https://github.com/bloomberg/bde)
 
 ### Sample Result
-Compiled with `g++ -O3 -std=c++17 -DNDEBUG` (64-bit/g++6.3.0/Debian)
-
-Provided by [@user706](https://github.com/user706) (Intel Core i7-6700K, with -O3 -std=c++17 -NDEBUG on gcc-8.1.0).
+Compiled with MSVC (64-bit/Visual Studio 15.8.9/Release Build/Boost 1.68.0)
 
 #### [various.cpp](various.cpp)
 The size of each implementation is shown in the `[size]` section.
@@ -33,129 +31,119 @@ Other sections show the timing of function invocation for each implementation wh
 ```
 [size]
 stdex::function<int(int)>: 24
-std::function<int(int)>: 32
-cxx_function::function<int(int)>: 32
+std::function<int(int)>: 64
+cxx_function::function<int(int)>: 40
 multifunction<int(int)>: 32
-boost::function<int(int)>: 32
+boost::function<int(int)>: 40
 func::function<int(int)>: 32
 generic::delegate<int(int)>: 48
-FastDelegate1: 24
-ssvu::FastFunc<int(int)>: 40
 fu2::function<int(int)>: 32
 fixed_size_function<int(int)>: 128
-gnr_forwarder: 64
 embxx_util_StaticFunction: 64
 Function_: 56
 
 [function_pointer]
-Perf< no_abstraction >: 0.1288982620 [s] {checksum: 0}
-Perf< stdex::function<int(int)> >: 0.1802238570 [s] {checksum: 0}
-Perf< std::function<int(int)> >: 0.2058876670 [s] {checksum: 0}
-Perf< cxx_function::function<int(int)> >: 0.1803517340 [s] {checksum: 0}
-Perf< multifunction<int(int)> >: 0.1802829260 [s] {checksum: 0}
-Perf< boost::function<int(int)> >: 0.2058794960 [s] {checksum: 0}
-Perf< func::function<int(int)> >: 0.1802563850 [s] {checksum: 0}
-Perf< generic::delegate<int(int)> >: 0.2060581670 [s] {checksum: 0}
-Perf< fu2::function<int(int)> >: 0.1802537290 [s] {checksum: 0}
-Perf< fixed_size_function<int(int)> >: 0.1853615050 [s] {checksum: 0}
-Perf< gnr_forwarder >: 0.1803345000 [s] {checksum: 0}
-Perf< embxx_util_StaticFunction >: 0.1802848970 [s] {checksum: 0}
-Perf< Function_ >:    0.1802979720 [s] {checksum: 0}
+Perf< no_abstraction >: 0.1330217596 [s] {checksum: 0}
+Perf< stdex::function<int(int)> >: 0.2122339664 [s] {checksum: 0}
+Perf< std::function<int(int)> >: 0.2399393114 [s] {checksum: 0}
+Perf< cxx_function::function<int(int)> >: 0.2386651034 [s] {checksum: 0}
+Perf< multifunction<int(int)> >: 0.2141137326 [s] {checksum: 0}
+Perf< boost::function<int(int)> >: 0.2151225938 [s] {checksum: 0}
+Perf< func::function<int(int)> >: 0.2121811386 [s] {checksum: 0}
+Perf< generic::delegate<int(int)> >: 0.2123649795 [s] {checksum: 0}
+Perf< fu2::function<int(int)> >: 0.2420536333 [s] {checksum: 0}
+Perf< fixed_size_function<int(int)> >: 0.2389506757 [s] {checksum: 0}
+Perf< embxx_util_StaticFunction >: 0.2130780047 [s] {checksum: 0}
+Perf< Function_ >:    0.2130749860 [s] {checksum: 0}
 
 [compile_time_function_pointer]
-Perf< no_abstraction >: 0.3934555440 [s] {checksum: 0}
-Perf< stdex::function<int(int)> >: 1.5451997980 [s] {checksum: 0}
-Perf< std::function<int(int)> >: 1.5459942540 [s] {checksum: 0}
-Perf< cxx_function::function<int(int)> >: 1.5461171210 [s] {checksum: 0}
-Perf< multifunction<int(int)> >: 1.5450458270 [s] {checksum: 0}
-Perf< boost::function<int(int)> >: 1.5452900910 [s] {checksum: 0}
-Perf< func::function<int(int)> >: 1.2891927270 [s] {checksum: 0}
-Perf< generic::delegate<int(int)> >: 1.3323708480 [s] {checksum: 0}
-Perf< fu2::function<int(int)> >: 1.5452935910 [s] {checksum: 0}
-Perf< fixed_size_function<int(int)> >: 1.4699039690 [s] {checksum: 0}
-Perf< gnr_forwarder >: 1.3481359820 [s] {checksum: 0}
-Perf< embxx_util_StaticFunction >: 1.5468700840 [s] {checksum: 0}
-Perf< Function_ >:    1.5467078300 [s] {checksum: 0}
+Perf< no_abstraction >: 0.3972803010 [s] {checksum: 0}
+Perf< stdex::function<int(int)> >: 1.5937800175 [s] {checksum: 0}
+Perf< std::function<int(int)> >: 1.8513632305 [s] {checksum: 0}
+Perf< cxx_function::function<int(int)> >: 1.6328985953 [s] {checksum: 0}
+Perf< multifunction<int(int)> >: 1.5960648980 [s] {checksum: 0}
+Perf< boost::function<int(int)> >: 1.5989849202 [s] {checksum: 0}
+Perf< func::function<int(int)> >: 1.3389178922 [s] {checksum: 0}
+Perf< generic::delegate<int(int)> >: 1.6025210662 [s] {checksum: 0}
+Perf< fu2::function<int(int)> >: 1.5986084840 [s] {checksum: 0}
+Perf< fixed_size_function<int(int)> >: 1.8629920010 [s] {checksum: 0}
+Perf< embxx_util_StaticFunction >: 1.8321471718 [s] {checksum: 0}
+Perf< Function_ >:    1.8688015562 [s] {checksum: 0}
 
 [compile_time_delegate]
-Perf< no_abstraction >: 0.6910022930 [s] {checksum: 0}
-Perf< stdex::function<int(int)> >: 1.3061602740 [s] {checksum: 0}
-Perf< std::function<int(int)> >: 1.5484581910 [s] {checksum: 0}
-Perf< cxx_function::function<int(int)> >: 1.6332273820 [s] {checksum: 0}
-Perf< multifunction<int(int)> >: 1.5920799810 [s] {checksum: 0}
-Perf< boost::function<int(int)> >: 1.4077582930 [s] {checksum: 0}
-Perf< func::function<int(int)> >: 1.3359535000 [s] {checksum: 0}
-Perf< generic::delegate<int(int)> >: 1.6271561910 [s] {checksum: 0}
-Perf< fu2::function<int(int)> >: 1.5549385590 [s] {checksum: 0}
-Perf< fixed_size_function<int(int)> >: 1.9666569350 [s] {checksum: 0}
-Perf< gnr_forwarder >: 1.6086427330 [s] {checksum: 0}
-Perf< embxx_util_StaticFunction >: 1.5334078040 [s] {checksum: 0}
-Perf< Function_ >:    1.6022175490 [s] {checksum: 0}
+Perf< no_abstraction >: 0.0626496160 [s] {checksum: 0}
+Perf< stdex::function<int(int)> >: 0.1589898226 [s] {checksum: 0}
+Perf< std::function<int(int)> >: 0.2116471244 [s] {checksum: 0}
+Perf< cxx_function::function<int(int)> >: 0.1846861995 [s] {checksum: 0}
+Perf< multifunction<int(int)> >: 0.1856941551 [s] {checksum: 0}
+Perf< boost::function<int(int)> >: 0.1645116925 [s] {checksum: 0}
+Perf< func::function<int(int)> >: 0.1423058787 [s] {checksum: 0}
+Perf< generic::delegate<int(int)> >: 0.1793970741 [s] {checksum: 0}
+Perf< fu2::function<int(int)> >: 0.2156849841 [s] {checksum: 0}
+Perf< fixed_size_function<int(int)> >: 0.2176550105 [s] {checksum: 0}
+Perf< embxx_util_StaticFunction >: 0.1899209876 [s] {checksum: 0}
+Perf< Function_ >:    0.1872478979 [s] {checksum: 0}
 
 [heavy_functor]
-Perf< stdex::function<int(int)> >: 1.2890043320 [s] {checksum: 0}
-Perf< std::function<int(int)> >: 1.2936670380 [s] {checksum: 0}
-Perf< cxx_function::function<int(int)> >: 1.3891772660 [s] {checksum: 0}
-Perf< multifunction<int(int)> >: 1.3025428230 [s] {checksum: 0}
-Perf< boost::function<int(int)> >: 1.2925984040 [s] {checksum: 0}
-Perf< func::function<int(int)> >: 1.2891075260 [s] {checksum: 0}
-Perf< generic::delegate<int(int)> >: 1.3324250970 [s] {checksum: 0}
-Perf< fu2::function<int(int)> >: 1.2900123970 [s] {checksum: 0}
-Perf< fixed_size_function<int(int)> >: 1.5319183420 [s] {checksum: 0}
-Perf< gnr_forwarder >: 1.5473598640 [s] {checksum: 0}
-Perf< embxx_util_StaticFunction >: 1.3502855220 [s] {checksum: 0}
-Perf< Function_ >:    1.5471582460 [s] {checksum: 0}
+Perf< stdex::function<int(int)> >: 1.5955586561 [s] {checksum: 0}
+Perf< std::function<int(int)> >: 1.8375015018 [s] {checksum: 0}
+Perf< cxx_function::function<int(int)> >: 1.6050371818 [s] {checksum: 0}
+Perf< multifunction<int(int)> >: 1.6027912430 [s] {checksum: 0}
+Perf< boost::function<int(int)> >: 1.6006808455 [s] {checksum: 0}
+Perf< func::function<int(int)> >: 1.3345585372 [s] {checksum: 0}
+Perf< generic::delegate<int(int)> >: 1.6102707624 [s] {checksum: 0}
+Perf< fu2::function<int(int)> >: 1.5997166615 [s] {checksum: 0}
+Perf< fixed_size_function<int(int)> >: 1.8603795878 [s] {checksum: 0}
+Perf< embxx_util_StaticFunction >: 1.8277974767 [s] {checksum: 0}
+Perf< Function_ >:    1.8649366700 [s] {checksum: 0}
 
 [non_assignable]
-Perf< stdex::function<int(int)> >: 1.5462126420 [s] {checksum: 0}
-Perf< std::function<int(int)> >: 1.5755652510 [s] {checksum: 0}
-Perf< cxx_function::function<int(int)> >: 1.6353873220 [s] {checksum: 0}
-Perf< multifunction<int(int)> >: 1.6095705330 [s] {checksum: 0}
-Perf< boost::function<int(int)> >: 1.4090110690 [s] {checksum: 0}
-Perf< func::function<int(int)> >: 1.3380219750 [s] {checksum: 0}
-Perf< generic::delegate<int(int)> >: 1.8247514010 [s] {checksum: 0}
-Perf< fu2::function<int(int)> >: 1.6780532600 [s] {checksum: 0}
-Perf< fixed_size_function<int(int)> >: 1.9525207950 [s] {checksum: 0}
-Perf< gnr_forwarder >: 1.6540586500 [s] {checksum: 0}
-Perf< embxx_util_StaticFunction >: 1.5273487910 [s] {checksum: 0}
-Perf< Function_ >:    1.5972135040 [s] {checksum: 0}
+Perf< stdex::function<int(int)> >: 0.1590927615 [s] {checksum: 0}
+Perf< std::function<int(int)> >: 0.2110050395 [s] {checksum: 0}
+Perf< cxx_function::function<int(int)> >: 0.1838614811 [s] {checksum: 0}
+Perf< multifunction<int(int)> >: 0.1871413366 [s] {checksum: 0}
+Perf< boost::function<int(int)> >: 0.1631176407 [s] {checksum: 0}
+Perf< func::function<int(int)> >: 0.1413607129 [s] {checksum: 0}
+Perf< generic::delegate<int(int)> >: 0.2028013256 [s] {checksum: 0}
+Perf< fu2::function<int(int)> >: 0.2168885537 [s] {checksum: 0}
+Perf< fixed_size_function<int(int)> >: 0.2178153053 [s] {checksum: 0}
+Perf< embxx_util_StaticFunction >: 0.1893721816 [s] {checksum: 0}
+Perf< Function_ >:    0.1874921136 [s] {checksum: 0}
 
 [lambda_capture]
-Perf< stdex::function<int(int)> >: 1.5460207890 [s] {checksum: 0}
-Perf< std::function<int(int)> >: 1.5463801470 [s] {checksum: 0}
-Perf< cxx_function::function<int(int)> >: 1.4500088330 [s] {checksum: 0}
-Perf< multifunction<int(int)> >: 1.5489294890 [s] {checksum: 0}
-Perf< boost::function<int(int)> >: 1.5449383350 [s] {checksum: 0}
-Perf< func::function<int(int)> >: 1.2895905430 [s] {checksum: 0}
-Perf< generic::delegate<int(int)> >: 1.6830352960 [s] {checksum: 0}
-Perf< fu2::function<int(int)> >: 1.5461697310 [s] {checksum: 0}
-Perf< fixed_size_function<int(int)> >: 1.6821093720 [s] {checksum: 0}
-Perf< gnr_forwarder >: 1.4132016220 [s] {checksum: 0}
-Perf< embxx_util_StaticFunction >: 1.3603302370 [s] {checksum: 0}
-Perf< Function_ >:    1.3916453080 [s] {checksum: 0}
+Perf< stdex::function<int(int)> >: 1.5930697092 [s] {checksum: 0}
+Perf< std::function<int(int)> >: 1.9196068641 [s] {checksum: 0}
+Perf< cxx_function::function<int(int)> >: 1.8563353887 [s] {checksum: 0}
+Perf< multifunction<int(int)> >: 1.6529472210 [s] {checksum: 0}
+Perf< boost::function<int(int)> >: 1.6056910397 [s] {checksum: 0}
+Perf< func::function<int(int)> >: 1.5992049860 [s] {checksum: 0}
+Perf< generic::delegate<int(int)> >: 1.8260656285 [s] {checksum: 0}
+Perf< fu2::function<int(int)> >: 1.8579377332 [s] {checksum: 0}
+Perf< fixed_size_function<int(int)> >: 2.0478922288 [s] {checksum: 0}
+Perf< embxx_util_StaticFunction >: 1.8469540663 [s] {checksum: 0}
+Perf< Function_ >:    1.7864459408 [s] {checksum: 0}
 
-[lambda]
-Perf< stdex::function<int(int)> >: 1.2889468560 [s] {checksum: 0}
-Perf< std::function<int(int)> >: 1.5455471370 [s] {checksum: 0}
-Perf< cxx_function::function<int(int)> >: 1.5464877670 [s] {checksum: 0}
-Perf< multifunction<int(int)> >: 1.2895574060 [s] {checksum: 0}
-Perf< boost::function<int(int)> >: 1.5452744220 [s] {checksum: 0}
-Perf< func::function<int(int)> >: 1.2907299890 [s] {checksum: 0}
-Perf< generic::delegate<int(int)> >: 1.5466072320 [s] {checksum: 0}
-Perf< fu2::function<int(int)> >: 1.5454115640 [s] {checksum: 0}
-Perf< fixed_size_function<int(int)> >: 1.4694047830 [s] {checksum: 0}
-Perf< gnr_forwarder >: 1.3485369340 [s] {checksum: 0}
-Perf< embxx_util_StaticFunction >: 1.5466635040 [s] {checksum: 0}
-Perf< Function_ >:    1.5461067630 [s] {checksum: 0}
+[stateless_lambda]
+Perf< stdex::function<int(int)> >: 1.5926567463 [s] {checksum: 0}
+Perf< std::function<int(int)> >: 1.8454776031 [s] {checksum: 0}
+Perf< cxx_function::function<int(int)> >: 1.6209733850 [s] {checksum: 0}
+Perf< multifunction<int(int)> >: 1.6152552974 [s] {checksum: 0}
+Perf< boost::function<int(int)> >: 1.6308521949 [s] {checksum: 0}
+Perf< func::function<int(int)> >: 1.3416845627 [s] {checksum: 0}
+Perf< generic::delegate<int(int)> >: 1.6141353468 [s] {checksum: 0}
+Perf< fu2::function<int(int)> >: 1.6046740280 [s] {checksum: 0}
+Perf< fixed_size_function<int(int)> >: 1.8767809781 [s] {checksum: 0}
+Perf< embxx_util_StaticFunction >: 1.8332145964 [s] {checksum: 0}
+Perf< Function_ >:    1.8790269169 [s] {checksum: 0}
 ```
 
 #### [overload.cpp](overload.cpp)
 This shows the timing of each multi-method technique.
 ```
-with< no_abstraction >: 0.1754783920 [s] {checksum: 3}
-with< stdex::function<Sig...> >: 3.6054651620 [s] {checksum: 3}
-with< multifunction<Sig...> >: 4.0471627540 [s] {checksum: 3}
-with< cxx_function::function<Sig...> >: 3.6831113920 [s] {checksum: 3}
-with< fu2::function<Sig...> >: 3.5997253920 [s] {checksum: 3}
-with< virtual_base& >: 1.3165000820 [s] {checksum: 3}
+Perf< no_abstraction >: 0.0336299140 [s] {checksum: 3}
+Perf< stdex::function<Sig...> >: 0.4114143195 [s] {checksum: 3}
+Perf< multifunction<Sig...> >: 0.4737098380 [s] {checksum: 3}
+Perf< cxx_function::function<Sig...> >: 0.4740204658 [s] {checksum: 3}
+Perf< fu2::function<Sig...> >: 0.4370874521 [s] {checksum: 3}
+Perf< virtual_base& >: 0.3996554416 [s] {checksum: 3}
 ```

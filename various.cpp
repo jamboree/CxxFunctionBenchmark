@@ -9,34 +9,57 @@
 #include <boost/function.hpp>
 #include "function.h"
 #include "delegate.hpp"
-#include "FastFunc.hpp"
 #include "stdex.hpp"
 #include "function2.hpp"
 #include "fixed_size_function.hpp"
-#include "forwarder.hpp"
-#include "StaticFunction.h"
-#include "Function.h"
+#include "embxx/StaticFunction.h"
+#include "Function-rigtorp.h"
+#include "cxx_function.hpp"
+
+// Some optional stuff...
+#ifdef ADD_SSVU
+#define OPT_SSVU
+#include "FastFunc.hpp"
+#else
+#define OPT_SSVU(...)
+#endif
+#ifdef ADD_CLUGSTON
+#define OPT_CLUGSTON
 #include "FastDelegate.h"
+typedef fastdelegate::FastDelegate1<int, int> FastDelegate1;
+#else
+#define OPT_CLUGSTON(...)
+#endif
+#ifdef ADD_GNR
+#define OPT_GNR
+#include "forwarder.hpp"
+typedef gnr::forwarder<int(int), 48> gnr_forwarder;
+#else
+#define OPT_GNR(...)
+#endif
+#ifdef ADD_FOLLY
+#define OPT_FOLLY
 #include "folly/Function.h"
-
+#else
+#define OPT_FOLLY(...)
+#endif
 #ifdef ADD_BDE
+#define OPT_BDE
 #include "bslstl_function.h"
-#define PERF_BDE (Perf< bsl::function<int(int)> >)
 #else
-#define PERF_BDE /**/
+#define OPT_BDE(...)
 #endif
 
-#ifndef _WIN32
-  #include "cxx_function.hpp"
-#else
-  #include "cxx_function_msvc.hpp"
-#endif
-
+// Measurement.
 #include "measure.hpp"  
-
 
 #define MAX_REPEAT 100000
 
+struct no_abstraction;
+
+typedef generic::delegate<int(int)> generic_delegate;
+typedef embxx::util::StaticFunction<int(int), 48> embxx_util_StaticFunction;
+typedef Function<int(int), 56> Function_;
 
 template<class... Sig>
 using multifunction =
@@ -85,14 +108,6 @@ struct A
     
     int a;
 };
-
-struct no_abstraction;
-
-typedef generic::delegate<int(int)> generic_delegate;
-typedef gnr::forwarder<int(int), 48> gnr_forwarder;
-typedef embxx::util::StaticFunction<int(int), 48> embxx_util_StaticFunction;
-typedef Function<int(int), 56> Function_;
-typedef fastdelegate::FastDelegate1<int, int> FastDelegate1;
 
 namespace cases
 {
@@ -176,9 +191,9 @@ namespace cases
     {};
             
     template<class F>
-    struct lambda : base<F>
+    struct stateless_lambda : base<F>
     {
-        lambda()
+        stateless_lambda()
         {
             this->f = [](int val)
             {
@@ -219,75 +234,157 @@ namespace cases
     };
 }
 
-#ifdef CLUGSTON
-#define CLUGSTON_FUNCTION        (Perf< FastDelegate1 >)
-#else
-#define CLUGSTON_FUNCTION        /* nothing */
-#endif
+#define DECLARE_BENCHMARK(name, list)                                           \
+template<template<class> class Perf>                                            \
+void benchmark_##name()                                                         \
+{                                                                               \
+    std::cout << "[" #name << "]\n";                                            \
+    BOOST_SPIRIT_TEST_BENCHMARK(                                                \
+        MAX_REPEAT,                                                             \
+        list                                                                    \
+    )                                                                           \
+    std::cout << "\n";                                                          \
+}                                                                               \
+/***/
 
-#ifdef SSVU
-#define SSVU_FUNCTION           (Perf< ssvu::FastFunc<int(int)> >)
-#else
-#define SSVU_FUNCTION            /* nothing */
-#endif
+#define BENCHMARK(name) benchmark_##name<cases::name>()
+#define SHOW_SIZE(name) std::cout << #name << ": " << sizeof(name) << "\n"
 
-template<template<class> class Perf>
-void benchmark1(char const* name)
-{
-    std::cout << "[" << name << "]\n";
-    BOOST_SPIRIT_TEST_BENCHMARK(
-        MAX_REPEAT,
-        (Perf< no_abstraction >)
-        (Perf< stdex::function<int(int)> >)
-        (Perf< std::function<int(int)> >)
-        (Perf< cxx_function::function<int(int)> >)
-        (Perf< multifunction<int(int)> >)
-        (Perf< boost::function<int(int)> >)
-        (Perf< func::function<int(int)> >)
-        (Perf< generic::delegate<int(int)> >)
-        (Perf< fu2::function<int(int)> >)
-        CLUGSTON_FUNCTION
-        SSVU_FUNCTION
-        (Perf< fixed_size_function<int(int)> >)
-        (Perf< gnr_forwarder >)
-        (Perf< embxx_util_StaticFunction >)
-        (Perf< Function_ >)
-        (Perf< folly::Function<int(int)> >)
-        PERF_BDE
-    )
-    std::cout << std::endl;
-}
+DECLARE_BENCHMARK(function_pointer,
+    (Perf< no_abstraction >)
+    (Perf< stdex::function<int(int)> >)
+    (Perf< std::function<int(int)> >)
+    (Perf< cxx_function::function<int(int)> >)
+    (Perf< multifunction<int(int)> >)
+    (Perf< boost::function<int(int)> >)
+    (Perf< func::function<int(int)> >)
+    (Perf< generic::delegate<int(int)> >)
+    (Perf< fu2::function<int(int)> >)
+    (Perf< fixed_size_function<int(int)> >)
+    (Perf< embxx_util_StaticFunction >)
+    (Perf< Function_ >)
+    OPT_CLUGSTON(Perf< FastDelegate1 >)
+    OPT_SSVU(Perf< ssvu::FastFunc<int(int)> >)
+    OPT_GNR(Perf< gnr_forwarder >)
+    OPT_FOLLY(Perf< folly::Function<int(int)> >)
+    OPT_BDE(Perf< bsl::function<int(int)> >)
+)
 
-template<template<class> class Perf>
-void benchmark2(char const* name)
-{
-    std::cout << "[" << name << "]\n";
-    BOOST_SPIRIT_TEST_BENCHMARK(
-        MAX_REPEAT,
-        (Perf< stdex::function<int(int)> >)
-        (Perf< std::function<int(int)> >)
-        (Perf< cxx_function::function<int(int)> >)
-        (Perf< multifunction<int(int)> >)
-        (Perf< boost::function<int(int)> >)
-        (Perf< func::function<int(int)> >)
-        (Perf< generic::delegate<int(int)> >)
-        (Perf< fu2::function<int(int)> >)
-        CLUGSTON_FUNCTION
-        SSVU_FUNCTION
-        (Perf< fixed_size_function<int(int)> >)
-        (Perf< gnr_forwarder >)
-        (Perf< embxx_util_StaticFunction >)
-        (Perf< Function_ >)
-        (Perf< folly::Function<int(int)> >)
-        PERF_BDE
-    )
-    std::cout << std::endl;
-}
+DECLARE_BENCHMARK(compile_time_function_pointer,
+    (Perf< no_abstraction >)
+    (Perf< stdex::function<int(int)> >)
+    (Perf< std::function<int(int)> >)
+    (Perf< cxx_function::function<int(int)> >)
+    (Perf< multifunction<int(int)> >)
+    (Perf< boost::function<int(int)> >)
+    (Perf< func::function<int(int)> >)
+    (Perf< generic::delegate<int(int)> >)
+    (Perf< fu2::function<int(int)> >)
+    (Perf< fixed_size_function<int(int)> >)
+    (Perf< embxx_util_StaticFunction >)
+    (Perf< Function_ >)
+    //OPT_CLUGSTON(Perf< FastDelegate1 >)
+    //OPT_SSVU(Perf< ssvu::FastFunc<int(int)> >)
+    OPT_GNR(Perf< gnr_forwarder >)
+    OPT_FOLLY(Perf< folly::Function<int(int)> >)
+    OPT_BDE(Perf< bsl::function<int(int)> >)
+)
 
-#define BENCHMARK(i, name) benchmark##i<cases::name>(#name)
-#define SHOW_SIZE(name) \
-std::cout << #name << ": " << sizeof(name) << std::endl;
+DECLARE_BENCHMARK(compile_time_delegate,
+    (Perf< no_abstraction >)
+    (Perf< stdex::function<int(int)> >)
+    (Perf< std::function<int(int)> >)
+    (Perf< cxx_function::function<int(int)> >)
+    (Perf< multifunction<int(int)> >)
+    (Perf< boost::function<int(int)> >)
+    (Perf< func::function<int(int)> >)
+    (Perf< generic::delegate<int(int)> >)
+    (Perf< fu2::function<int(int)> >)
+    (Perf< fixed_size_function<int(int)> >)
+    (Perf< embxx_util_StaticFunction >)
+    (Perf< Function_ >)
+    //OPT_CLUGSTON(Perf< FastDelegate1 >)
+    //OPT_SSVU(Perf< ssvu::FastFunc<int(int)> >)
+    OPT_GNR(Perf< gnr_forwarder >)
+    OPT_FOLLY(Perf< folly::Function<int(int)> >)
+    OPT_BDE(Perf< bsl::function<int(int)> >)
+)
 
+DECLARE_BENCHMARK(heavy_functor,
+    (Perf< stdex::function<int(int)> >)
+    (Perf< std::function<int(int)> >)
+    (Perf< cxx_function::function<int(int)> >)
+    (Perf< multifunction<int(int)> >)
+    (Perf< boost::function<int(int)> >)
+    (Perf< func::function<int(int)> >)
+    (Perf< generic::delegate<int(int)> >)
+    (Perf< fu2::function<int(int)> >)
+    (Perf< fixed_size_function<int(int)> >)
+    (Perf< embxx_util_StaticFunction >)
+    (Perf< Function_ >)
+    //OPT_CLUGSTON(Perf< FastDelegate1 >)
+    //OPT_SSVU(Perf< ssvu::FastFunc<int(int)> >)
+    OPT_GNR(Perf< gnr_forwarder >)
+    OPT_FOLLY(Perf< folly::Function<int(int)> >)
+    OPT_BDE(Perf< bsl::function<int(int)> >)
+)
+
+DECLARE_BENCHMARK(non_assignable,
+    (Perf< stdex::function<int(int)> >)
+    (Perf< std::function<int(int)> >)
+    (Perf< cxx_function::function<int(int)> >)
+    (Perf< multifunction<int(int)> >)
+    (Perf< boost::function<int(int)> >)
+    (Perf< func::function<int(int)> >)
+    (Perf< generic::delegate<int(int)> >)
+    (Perf< fu2::function<int(int)> >)
+    (Perf< fixed_size_function<int(int)> >)
+    (Perf< embxx_util_StaticFunction >)
+    (Perf< Function_ >)
+    //OPT_CLUGSTON(Perf< FastDelegate1 >)
+    //OPT_SSVU(Perf< ssvu::FastFunc<int(int)> >)
+    OPT_GNR(Perf< gnr_forwarder >)
+    OPT_FOLLY(Perf< folly::Function<int(int)> >)
+    OPT_BDE(Perf< bsl::function<int(int)> >)
+)
+
+DECLARE_BENCHMARK(lambda_capture,
+    (Perf< stdex::function<int(int)> >)
+    (Perf< std::function<int(int)> >)
+    (Perf< cxx_function::function<int(int)> >)
+    (Perf< multifunction<int(int)> >)
+    (Perf< boost::function<int(int)> >)
+    (Perf< func::function<int(int)> >)
+    (Perf< generic::delegate<int(int)> >)
+    (Perf< fu2::function<int(int)> >)
+    (Perf< fixed_size_function<int(int)> >)
+    (Perf< embxx_util_StaticFunction >)
+    (Perf< Function_ >)
+    //OPT_CLUGSTON(Perf< FastDelegate1 >)
+    OPT_SSVU(Perf< ssvu::FastFunc<int(int)> >)
+    OPT_GNR(Perf< gnr_forwarder >)
+    OPT_FOLLY(Perf< folly::Function<int(int)> >)
+    OPT_BDE(Perf< bsl::function<int(int)> >)
+)
+
+DECLARE_BENCHMARK(stateless_lambda,
+    (Perf< stdex::function<int(int)> >)
+    (Perf< std::function<int(int)> >)
+    (Perf< cxx_function::function<int(int)> >)
+    (Perf< multifunction<int(int)> >)
+    (Perf< boost::function<int(int)> >)
+    (Perf< func::function<int(int)> >)
+    (Perf< generic::delegate<int(int)> >)
+    (Perf< fu2::function<int(int)> >)
+    (Perf< fixed_size_function<int(int)> >)
+    (Perf< embxx_util_StaticFunction >)
+    (Perf< Function_ >)
+    OPT_CLUGSTON(Perf< FastDelegate1 >)
+    OPT_SSVU(Perf< ssvu::FastFunc<int(int)> >)
+    OPT_GNR(Perf< gnr_forwarder >)
+    OPT_FOLLY(Perf< folly::Function<int(int)> >)
+    OPT_BDE(Perf< bsl::function<int(int)> >)
+)
 
 int main(int /*argc*/, char* /*argv*/[])
 {
@@ -299,32 +396,24 @@ int main(int /*argc*/, char* /*argv*/[])
     SHOW_SIZE(boost::function<int(int)>);
     SHOW_SIZE(func::function<int(int)>);
     SHOW_SIZE(generic::delegate<int(int)>);
-    SHOW_SIZE(FastDelegate1);
-    SHOW_SIZE(ssvu::FastFunc<int(int)>);
     SHOW_SIZE(fu2::function<int(int)>);
     SHOW_SIZE(fixed_size_function<int(int)>);
-    SHOW_SIZE(gnr_forwarder);
     SHOW_SIZE(embxx_util_StaticFunction);
     SHOW_SIZE(Function_);
-    SHOW_SIZE(folly::Function<int(int)>);
-#ifdef ADD_BDE
-    SHOW_SIZE(bsl::function<int(int)>);
-#endif
-    std::cout << std::endl;
+    OPT_CLUGSTON(SHOW_SIZE(FastDelegate1));
+    OPT_SSVU(SHOW_SIZE(ssvu::FastFunc<int(int)>));
+    OPT_GNR(SHOW_SIZE(gnr_forwarder));
+    OPT_FOLLY(SHOW_SIZE(folly::Function<int(int)>));
+    OPT_BDE(SHOW_SIZE(bsl::function<int(int)>));
+    std::cout << "\n";
     
-    BENCHMARK(1, function_pointer);
-#ifndef CLUGSTON
-
-#ifndef SSVU
-    BENCHMARK(1, compile_time_function_pointer);
-    BENCHMARK(1, compile_time_delegate);
-    BENCHMARK(2, heavy_functor);
-    BENCHMARK(2, non_assignable);
-#endif
-    BENCHMARK(2, lambda_capture);
-
-#endif
-    BENCHMARK(2, lambda);
+    BENCHMARK(function_pointer);
+    BENCHMARK(compile_time_function_pointer);
+    BENCHMARK(compile_time_delegate);
+    BENCHMARK(heavy_functor);
+    BENCHMARK(non_assignable);
+    BENCHMARK(lambda_capture);
+    BENCHMARK(stateless_lambda);
     
     // This is ultimately responsible for preventing all the test code
     // from being optimized away.  Change this to return 0 and you

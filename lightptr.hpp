@@ -88,7 +88,7 @@ class light_ptr
 
   public:
     template <typename U>
-    std::enable_if_t<!std::is_void<U>{}> dec_ref(U* const ptr) noexcept
+    std::enable_if_t<!std::is_void<U>::value> dec_ref(U* const ptr) noexcept
     {
       if (counter_type(1) ==
         counter_.fetch_sub(counter_type(1), std::memory_order_relaxed))
@@ -101,7 +101,7 @@ class light_ptr
     }
 
     template <typename U>
-    std::enable_if_t<std::is_void<U>{}> dec_ref(U* const ptr) noexcept
+    std::enable_if_t<std::is_void<U>::value> dec_ref(U* const ptr) noexcept
     {
       if (counter_type(1) ==
         counter_.fetch_sub(counter_type(1), std::memory_order_relaxed))

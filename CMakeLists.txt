@@ -1,6 +1,10 @@
 project(CxxFunctionBenchmark CXX)
 cmake_minimum_required(VERSION 3.2)
 
+if (POLICY CMP0074)
+  cmake_policy(SET CMP0074 NEW)
+endif()
+
 if(NOT DEFINED CMAKE_CXX_STANDARD)
     if(${CMAKE_VERSION} VERSION_LESS "3.8.0")
       set(CMAKE_CXX_STANDARD 14)
@@ -32,12 +36,22 @@ include_directories(SYSTEM clugston_styled) # ignore warnings from FastDelegate.
 
 option(CLUGSTON "Include Clugston's FastDelegate" OFF)
 if (CLUGSTON)
-  add_definitions(-DCLUGSTON)
+  add_definitions(-DADD_CLUGSTON)
 endif()
 
 option(SSVU "Include ssvu::FastFunc" OFF)
 if (SSVU)
-  add_definitions(-DSSVU)
+  add_definitions(-DADD_SSVU)
+endif()
+
+option(GNR "Include gnr::forwarder" OFF)
+if (GNR)
+  add_definitions(-DADD_GNR)
+endif()
+
+option(FOLLY "Include folly::Function" OFF)
+if (FOLLY)
+  add_definitions(-DADD_FOLLY)
 endif()
 
 option(BDE "Include Bloomberg BDE" OFF)

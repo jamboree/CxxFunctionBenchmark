@@ -335,8 +335,8 @@ private:
 
   template <typename T>
   static typename ::std::enable_if<
-    !(is_member_pair<T>{} ||
-    is_const_member_pair<T>{}),
+    !(is_member_pair<T>::value ||
+    is_const_member_pair<T>::value),
     R
   >::type
   functor_stub(void* const object_ptr, A&&... args)
@@ -346,8 +346,8 @@ private:
 
   template <typename T>
   static typename ::std::enable_if<
-    is_member_pair<T>{} ||
-    is_const_member_pair<T>{},
+    is_member_pair<T>::value ||
+    is_const_member_pair<T>::value,
     R
   >::type
   functor_stub(void* const object_ptr, A&&... args)

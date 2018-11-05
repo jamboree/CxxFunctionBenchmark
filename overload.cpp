@@ -9,13 +9,8 @@
 #include <boost/function.hpp>
 #include "function.h"
 #include "delegate.hpp"
-#include "FastFunc.hpp"
 #include "stdex.hpp"
-#ifndef _WIN32
-    #include "cxx_function.hpp"
-#else
-    #include "cxx_function_msvc.hpp"
-#endif
+#include "cxx_function.hpp"
 #include "function2.hpp"
 #include "measure.hpp"  
 
@@ -78,9 +73,9 @@ struct use_base<virtual_base&>
 };
 
 template<class F>
-struct with : test::base
+struct Perf : test::base
 {
-    with()
+    Perf()
       : f(h)
     {}
     
@@ -102,12 +97,12 @@ void benchmark()
     
     BOOST_SPIRIT_TEST_BENCHMARK(
         MAX_REPEAT,
-        (with< no_abstraction >)
-        (with< stdex::function<Sig...> >)
-        (with< multifunction<Sig...> >)
-        (with< cxx_function::function<Sig...> >)
-        (with< fu2::function<Sig...> >)
-        (with< virtual_base& >)
+        (Perf< no_abstraction >)
+        (Perf< stdex::function<Sig...> >)
+        (Perf< multifunction<Sig...> >)
+        (Perf< cxx_function::function<Sig...> >)
+        (Perf< fu2::function<Sig...> >)
+        (Perf< virtual_base& >)
     )
 }
 
