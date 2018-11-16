@@ -571,12 +571,11 @@ class Function final : private detail::function::FunctionTraits<FunctionType> {
   Function(Function<Signature>&& that, CoerceTag)
       : Function(static_cast<Function<Signature>&&>(that), HeapTag{}) {}
 
-  Function(
-      Function<typename Traits::OtherSignature>&& that,
-      CoerceTag) noexcept {
-    that.exec(Op::MOVE, &that.data_, &data_);
-    std::swap(call_, that.call_);
-    std::swap(exec_, that.exec_);
+  Function(Function<typename Traits::OtherSignature>&& that, CoerceTag) noexcept
+      : call_(that.call_), exec_(that.exec_) {
+    that.call_ = &Traits::uninitCall;
+    that.exec_ = nullptr;
+    exec(Op::MOVE, &that.data_, &data_);
   }
 
  public:
@@ -592,17 +591,18 @@ class Function final : private detail::function::FunctionTraits<FunctionType> {
   // Make sure Objective C blocks are copied
   template <class ReturnType, class... Args>
   /*implicit*/ Function(ReturnType (^objCBlock)(Args... args))
-      : Function([blockCopy = (ReturnType (^)(Args...))[objCBlock copy]](
+      : Function([blockCopy = (ReturnType(^)(Args...))[objCBlock copy]](
                      Args... args) { return blockCopy(args...); }){};
 #endif
 
   /**
    * Move constructor
    */
-  Function(Function&& that) noexcept {
-    that.exec(Op::MOVE, &that.data_, &data_);
-    std::swap(call_, that.call_);
-    std::swap(exec_, that.exec_);
+  Function(Function&& that) noexcept : call_(that.call_), exec_(that.exec_) {
+    // that must be uninitialized before exec() call in the case of self move
+    that.call_ = &Traits::uninitCall;
+    that.exec_ = nullptr;
+    exec(Op::MOVE, &that.data_, &data_);
   }
 
   /**
@@ -635,7 +635,7 @@ class Function final : private detail::function::FunctionTraits<FunctionType> {
       typename = detail::function::EnableIfNotFunction<Fun>,
       typename = typename Traits::template ResultOf<Fun>>
   /* implicit */ Function(Fun fun) noexcept(
-      IsSmall<Fun>::value && noexcept(Fun(std::declval<Fun>())))
+      IsSmall<Fun>::value&& noexcept(Fun(std::declval<Fun>())))
       : Function(std::move(fun), IsSmall<Fun>{}) {}
 
   /**
@@ -679,8 +679,8 @@ class Function final : private detail::function::FunctionTraits<FunctionType> {
 #if __OBJC__
   // Make sure Objective C blocks are copied
   template <class ReturnType, class... Args>
-  /* implicit */ Function &operator=(ReturnType (^objCBlock)(Args... args)) {
-    (*this) = [blockCopy = (ReturnType (^)(Args...))[objCBlock copy]](
+  /* implicit */ Function& operator=(ReturnType (^objCBlock)(Args... args)) {
+    (*this) = [blockCopy = (ReturnType(^)(Args...))[objCBlock copy]](
                   Args... args) { return blockCopy(args...); };
     return *this;
   }
