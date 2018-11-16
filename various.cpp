@@ -15,6 +15,7 @@
 #include "embxx/StaticFunction.h"
 #include "Function-rigtorp.h"
 #include "cxx_function.hpp"
+#include "inplace_function.h"
 
 // Some optional stuff...
 #ifdef ADD_SSVU
@@ -60,6 +61,8 @@ struct no_abstraction;
 typedef generic::delegate<int(int)> generic_delegate;
 typedef embxx::util::StaticFunction<int(int), 48> embxx_util_StaticFunction;
 typedef Function<int(int), 56> Function_;
+typedef stdext::inplace_function<int(int), 48> inplace_function;
+
 
 template<class... Sig>
 using multifunction =
@@ -263,6 +266,7 @@ DECLARE_BENCHMARK(function_pointer,
     (Perf< fixed_size_function<int(int)> >)
     (Perf< embxx_util_StaticFunction >)
     (Perf< Function_ >)
+    (Perf< inplace_function >)
     OPT_CLUGSTON(Perf< FastDelegate1 >)
     OPT_SSVU(Perf< ssvu::FastFunc<int(int)> >)
     OPT_GNR(Perf< gnr_forwarder >)
@@ -283,6 +287,7 @@ DECLARE_BENCHMARK(compile_time_function_pointer,
     (Perf< fixed_size_function<int(int)> >)
     (Perf< embxx_util_StaticFunction >)
     (Perf< Function_ >)
+    (Perf< inplace_function >)
     //OPT_CLUGSTON(Perf< FastDelegate1 >)
     //OPT_SSVU(Perf< ssvu::FastFunc<int(int)> >)
     OPT_GNR(Perf< gnr_forwarder >)
@@ -303,6 +308,7 @@ DECLARE_BENCHMARK(compile_time_delegate,
     (Perf< fixed_size_function<int(int)> >)
     (Perf< embxx_util_StaticFunction >)
     (Perf< Function_ >)
+    (Perf< inplace_function >)
     //OPT_CLUGSTON(Perf< FastDelegate1 >)
     //OPT_SSVU(Perf< ssvu::FastFunc<int(int)> >)
     OPT_GNR(Perf< gnr_forwarder >)
@@ -322,6 +328,7 @@ DECLARE_BENCHMARK(heavy_functor,
     (Perf< fixed_size_function<int(int)> >)
     (Perf< embxx_util_StaticFunction >)
     (Perf< Function_ >)
+    (Perf< inplace_function >)
     //OPT_CLUGSTON(Perf< FastDelegate1 >)
     //OPT_SSVU(Perf< ssvu::FastFunc<int(int)> >)
     OPT_GNR(Perf< gnr_forwarder >)
@@ -341,6 +348,7 @@ DECLARE_BENCHMARK(non_assignable,
     (Perf< fixed_size_function<int(int)> >)
     (Perf< embxx_util_StaticFunction >)
     (Perf< Function_ >)
+    (Perf< inplace_function >)
     //OPT_CLUGSTON(Perf< FastDelegate1 >)
     //OPT_SSVU(Perf< ssvu::FastFunc<int(int)> >)
     OPT_GNR(Perf< gnr_forwarder >)
@@ -360,6 +368,7 @@ DECLARE_BENCHMARK(lambda_capture,
     (Perf< fixed_size_function<int(int)> >)
     (Perf< embxx_util_StaticFunction >)
     (Perf< Function_ >)
+    (Perf< inplace_function >)
     //OPT_CLUGSTON(Perf< FastDelegate1 >)
     OPT_SSVU(Perf< ssvu::FastFunc<int(int)> >)
     OPT_GNR(Perf< gnr_forwarder >)
@@ -379,6 +388,7 @@ DECLARE_BENCHMARK(stateless_lambda,
     (Perf< fixed_size_function<int(int)> >)
     (Perf< embxx_util_StaticFunction >)
     (Perf< Function_ >)
+    (Perf< inplace_function >)
     OPT_CLUGSTON(Perf< FastDelegate1 >)
     OPT_SSVU(Perf< ssvu::FastFunc<int(int)> >)
     OPT_GNR(Perf< gnr_forwarder >)
@@ -400,6 +410,7 @@ int main(int /*argc*/, char* /*argv*/[])
     SHOW_SIZE(fixed_size_function<int(int)>);
     SHOW_SIZE(embxx_util_StaticFunction);
     SHOW_SIZE(Function_);
+    SHOW_SIZE(inplace_function);
     OPT_CLUGSTON(SHOW_SIZE(FastDelegate1));
     OPT_SSVU(SHOW_SIZE(ssvu::FastFunc<int(int)>));
     OPT_GNR(SHOW_SIZE(gnr_forwarder));
