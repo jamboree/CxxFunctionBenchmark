@@ -20,6 +20,7 @@
 
 #include <folly/CPortability.h>
 #include <folly/CppAttributes.h>
+#include <folly/Portability.h>
 
 namespace folly {
 
@@ -29,10 +30,11 @@ namespace folly {
 /// -fno-exceptions.
 template <typename Ex>
 [[noreturn]] FOLLY_NOINLINE FOLLY_COLD void throw_exception(Ex&& ex) {
-#if (__GNUC__ && !__EXCEPTIONS)
-  std::terminate();
-#else
+#if FOLLY_HAS_EXCEPTIONS
   throw static_cast<Ex&&>(ex);
+#else
+  (void)ex;
+  std::terminate();
 #endif
 }
 
@@ -91,5 +93,37 @@ terminate_with(Args&&... args) noexcept {
       detail::to_exception_arg_(static_cast<Args&&>(args))...);
 }
 // clang-format on
+
+/// invoke_noreturn_cold
+///
+/// Invoke the provided function with the provided arguments. If the invocation
+/// returns, terminate.
+///
+/// May be used with throw_exception in cases where construction of the object
+/// to be thrown requires more than just invoking its constructor with a given
+/// sequence of arguments passed by reference - for example, if a string message
+/// must be computed before being passed to the constructor of the object to be
+/// thrown.
+///
+/// Usage note:
+/// Passing extra values as arguments rather than capturing them allows smaller
+/// bytecode at the call-site.
+///
+/// Example:
+///
+///   if (i < 0) {
+///     invoke_noreturn_cold(
+///         [](int j) {
+///           throw_exceptions(runtime_error(to<string>("invalid: ", j)));
+///         },
+///         i);
+///   }
+template <typename F, typename... A>
+[[noreturn]] FOLLY_NOINLINE FOLLY_COLD void invoke_noreturn_cold(
+    F&& f,
+    A&&... a) {
+  static_cast<F&&>(f)(static_cast<A&&>(a)...);
+  std::terminate();
+}
 
 } // namespace folly

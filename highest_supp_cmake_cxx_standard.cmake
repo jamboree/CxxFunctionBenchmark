@@ -74,13 +74,7 @@ function(highest_supp_cmake_cxx_standard out_var)
 
   list(REVERSE lst_supp_cxx_stds)
   foreach(cxx_std IN LISTS lst_supp_cxx_stds)
-    try_compile(CAN_COMPILE_WITH_THIS_CXX_STANDARD ${CMAKE_CURRENT_BINARY_DIR} SOURCES ${CMAKE_CURRENT_BINARY_DIR}/try_compile.cpp
-      CXX_STANDARD ${cxx_std}
-      CXX_STANDARD_REQUIRED ON
-      CXX_EXTENSIONS OFF
-      )
-    
-    if (CAN_COMPILE_WITH_THIS_CXX_STANDARD)
+    if ("cxx_std_${cxx_std}" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
       set(${out_var} ${cxx_std} PARENT_SCOPE)
       break()
     endif()

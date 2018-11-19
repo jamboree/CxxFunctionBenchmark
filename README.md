@@ -20,6 +20,7 @@ Currently include:
 - [Function](Function.h) - By Erik Rigtorp, see [here](https://github.com/rigtorp/Function)
 - [folly::Function](folly/Function.h) - From Facebook Folly; see [here](https://github.com/facebook/folly/blob/master/folly/docs/Function.md)
 - [bsl::function](bde/groups/bsl/bslstl/bslstl_function.h) - From Bloomberg BDE; see [here](https://github.com/bloomberg/bde)
+- [stdext::inplace_function](inplace_function.h) - From SG14; see [here](https://github.com/WG21-SG14/SG14) and [here](https://github.com/WG21-SG14/SG14/blob/master/Docs/Proposals/NonAllocatingStandardFunction.pdf)
 
 ### Sample Result
 Compiled with MSVC (64-bit/Visual Studio 15.8.9/Release Build/Boost 1.68.0)

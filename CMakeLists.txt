@@ -39,6 +39,7 @@ endif()
 
 option(SSVU "Include ssvu::FastFunc" OFF)
 if (SSVU)
+  include_directories(SYSTEM clugston_styled)
   add_definitions(-DADD_SSVU)
 endif()
 
