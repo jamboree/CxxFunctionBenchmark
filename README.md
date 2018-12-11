@@ -16,8 +16,8 @@ Currently include:
 - [fu2::function](https://github.com/Naios/function2) - By Denis Blank
 - [fixed_size_function](https://github.com/pmed/fixed_size_function) - By Pavel Medvedev
 - [gnr::forwarder](forwarder.hpp) - [here](https://github.com/user1095108/generic).
-- [embxx::util::StaticFunction](StaticFunction.h) - By Alex Robenko, see [here](https://github.com/arobenko/embxx) - either on master or develop branch.
-- [Function](Function.h) - By Erik Rigtorp, see [here](https://github.com/rigtorp/Function)
+- [embxx::util::StaticFunction](embxx/StaticFunction.h) - By Alex Robenko, see [here](https://github.com/arobenko/embxx) - either on master or develop branch.
+- [Function](Function-rigtorp.h) - By Erik Rigtorp, see [here](https://github.com/rigtorp/Function)
 - [folly::Function](folly/Function.h) - From Facebook Folly; see [here](https://github.com/facebook/folly/blob/master/folly/docs/Function.md)
 - [bsl::function](bde/groups/bsl/bslstl/bslstl_function.h) - From Bloomberg BDE; see [here](https://github.com/bloomberg/bde)
 - [stdext::inplace_function](inplace_function.h) - From SG14; see [here](https://github.com/WG21-SG14/SG14) and [here](https://github.com/WG21-SG14/SG14/blob/master/Docs/Proposals/NonAllocatingStandardFunction.pdf)
