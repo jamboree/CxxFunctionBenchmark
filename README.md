@@ -1,7 +1,7 @@
 C++ Function Benchmark
 ======================
 
-Benchmark for various C++ function implementations.
+Benchmark for various C++ function implementations. This project focuses on invocation time.
 
 Currently include:
 - [stdex::function](stdex.hpp) - A multi-signature function implementation by [@jamboree](https://github.com/jamboree).
