@@ -34,7 +34,7 @@
  * these classes do.  For example, this page has a comparison of a plethora of std::function replacements:
  * https://github.com/jamboree/CxxFunctionBenchmark.
  *
- * The design goals for this implementation are:
+ * The design goals (in order) for this implementation are:
  *      Predictable memory and runtime -> fixed size and heapless
  *      Simple to use with no possible runtime errors, asserts, etc.
  *      Fast
@@ -54,8 +54,7 @@
  *
  * Note: See the accompanying unit tests for some good examples of use.
  */
-
-namespace Delegate
+namespace delegate
 {
     /*
      * Allow the delegate size to be specified as a compile-time constant.
@@ -88,9 +87,11 @@ namespace Delegate
 
     #ifdef DELEGATE_ARGS_SIZE_UNDEF
      #undef DELEGATE_ARGS_SIZE
+     #undef DELEGATE_ARGS_SIZE_UNDEF
     #endif
     #ifdef DELEGATE_ARGS_ALIGN_UNDEF
      #undef DELEGATE_ARGS_ALIGN
+     #undef DELEGATE_ARGS_ALIGN_UNDEF
     #endif
 
     /**
@@ -169,17 +170,9 @@ namespace Delegate
     }
 
     /**
-     * Class used to specialize the delegate.  This one is used to select the trivial delegate.
+     * Class used to specialize the delegate.  Selects the non-instantiable delegate.
      */
-    class TrivialType
-    {
-    };
-
-    /**
-     * Class used to specialize the delegate.  This one is used to select the non-trivial delegate.  However,
-     * this is not actually directly instantiatable.
-     */
-    class NonTrivialType
+    class NonType
     {
     };
 
@@ -213,113 +206,10 @@ namespace Delegate
     using func_call = Result (*)(const FunctorArgs &args, Arguments&&... arguments);
 
     /**
-     * A trivial delegate - trivially constructable and copyable.  This delegate is smaller than a non-trivial one, and
-     * is allowed to treat copies as memcpy and elide destructor calls.  All that's needed if all captures are POD-like.
-     *
-     * @tparam Result The delegate return type - must be default constructable.
-     * @tparam Arguments The delegate function arguments.
-     */
-    template<typename Result, typename... Arguments>
-    class Func<TrivialType, Result, Arguments...>
-    {
-    public:
-        /**
-         * Default (delegating) constructor.
-         */
-        Func() :
-            Func([](Arguments&&...){return Result();})
-        {
-        }
-
-        /**
-         * Copy Constructor.
-         *
-         * @param other The delegate to copy.
-         */
-        Func(const Func &other):
-            args(other.args),
-            call(other.call)
-        {
-        }
-
-        /**
-         * Constructor.
-         *
-         * Note: Args is left uninitialized until store_functor is called in the constructor body.
-         *
-         * @tparam T The functor type.
-         * @param functor The functor / function to call.
-         */
-        template<typename T>
-        Func(const T &functor) :
-             call(&typed_call<T, Result, Arguments...>)
-        {
-            static_assert(can_emplace<T>(), "Delegate doesn't fit.");
-            store_functor(args, functor);
-        }
-
-        /**
-         * Assignment operator.  Pass by value because delegates are small and construction has no side efects.
-         *
-         * @param other The delegate to copy from.
-         *
-         * @return Returns a reference to the class.
-         */
-        Func &operator=(Func other)
-        {
-            args = other.args;
-            call = other.call;
-
-            return *this;
-        }
-
-        /**
-         * Forwarding function call operator.
-         *
-         * @param arguments The arguments to pass through to the delegate.
-         *
-         * @return Returns the Result type.
-         */
-        Result operator()(Arguments... arguments) const
-        {
-            return call(args, std::forward<Arguments>(arguments)...);
-        }
-
-        /**
-         * @return the type-erased call function.
-         */
-        func_call<Result, Arguments...> get_call() const
-        {
-            return call;
-        }
-
-        /**
-         * @return Returns the delegate argument memory block.
-         */
-        FunctorArgs get_args() const
-        {
-            return args;
-        }
-
-    private:
-        /**
-         * The delegate arguments (function pointers and / or captures go here).
-         */
-        FunctorArgs args;
-
-        /**
-         * Trampoline function which reimbues the type-erased delgate with its original type and calls the functor.
-         * This is statically constructed by the compiler or copied from another such value and cannot be null.
-         */
-        func_call<Result, Arguments...> call;
-    };
-
-    /**
      * Manual virtual table implementation.  A virtual table is useful because there are multiple functions a full
      * delegate has beyond the call function (copy and deletion), and storing pointers for each type erased function
      * would make the delegate larger for no real gain (delegates are expected to be called far more than copied or
-     * moved).  As for why actual virtual functions aren't used, a manual table allows the virtual table to be swapped,
-     * allowing the nice property that a full delegate can copy / construct from a trivial one and work identically.
+     * moved).
      */
     struct Vtable
     {
@@ -336,24 +226,6 @@ namespace Delegate
                 typed_copy<T>,
                 typed_move<T>,
                 typed_destroy<T>
-            };
-
-            return vtable;
-        }
-
-        /**
-         * Emits a trivial function static table pointer, unique to the template parameter.
-         *
-         * @tparam T The functor type associated with the virtual table.
-         */
-        template<typename = void>
-        inline static const Vtable &empty_vtable()
-        {
-            static const Vtable vtable = 
-            {
-                empty_copy,
-                empty_move,
-                empty_destroy
             };
 
             return vtable;
@@ -430,31 +302,10 @@ namespace Delegate
         {
             get_typed_functor<T>(args).~T();
         }
-
-        /**
-         * Empty copy function, for trivial delegates.
-         */
-        static void empty_copy(FunctorArgs &, const FunctorArgs &)
-        {
-        }
-
-        /**
-         * Empty move function, for trivial delegates.
-         */
-        static void empty_move(FunctorArgs &, FunctorArgs &&)
-        {
-        }
-
-        /**
-         * Empty destroy function, for trivial delegates.
-         */
-        static void empty_destroy(FunctorArgs &)
-        {
-        }
     };
 
     /**
-     * A non-trivial delegate - in which all captured types are property constructed and destroyed.
+     * Base delegate.
      *
      * Note that this is a perfectly functional class, and passes all unit tests.  It's also an inherently unsafe class,
      * because it cannot prevent a non-copyable lambda (e.g. one capturing a unique_ptr) from being copied via a copy of
@@ -465,27 +316,13 @@ namespace Delegate
      * @tparam Arguments The delegate function arguments.
      */
     template<typename Result, typename... Arguments>
-    class Func<NonTrivialType, Result, Arguments...>
+    class Func<NonType, Result, Arguments...>
     {
     protected:
         /**
-         * Copy Constructor for the trivial variant.
-         *
-         * @param other The delegate to copy.
-         */
-        Func(const Func<TrivialType, Result, Arguments...> &other):
-             call(other.get_call()),
-             vtable(&Vtable::empty_vtable<>())
-        {
-            args = other.get_args();
-        }
-
-        /**
          * Default constructor.  Note that args is left uninitialized since it's unused here.
          */
-        Func() :
-            call([](const FunctorArgs &, Arguments&&...){return Result();}),
-            vtable(&Vtable::empty_vtable<>())
+        Func() : Func([](Arguments...){return Result();})
         {
         }
 
@@ -645,7 +482,7 @@ namespace Delegate
      * @tparam Arguments The functor argument types.
      */
     template<typename Result, typename... Arguments>
-    class Func<NonMovableType, Result, Arguments...> : public Func<NonTrivialType, Result, Arguments...>
+    class Func<NonMovableType, Result, Arguments...> : public Func<NonType, Result, Arguments...>
     {
     public:
         Func() = default;
@@ -655,7 +492,7 @@ namespace Delegate
         Func &operator=(const Func &other) = default;
 
         template<typename T>
-        Func(const T &functor) : Func<NonTrivialType, Result, Arguments...>(functor)
+        Func(const T &functor) : Func<NonType, Result, Arguments...>(functor)
         {
         }
     };
@@ -669,7 +506,7 @@ namespace Delegate
      * @tparam Arguments The functor argument types.
      */
     template<typename Result, typename... Arguments>
-    class Func<NonCopyableType, Result, Arguments...> : public Func<NonTrivialType, Result, Arguments...>
+    class Func<NonCopyableType, Result, Arguments...> : public Func<NonType, Result, Arguments...>
     {
     public:
         Func() = default;
@@ -679,17 +516,14 @@ namespace Delegate
         Func &operator=(Func &&other) = default;
 
         template<typename T>
-        Func(T &&functor) : Func<NonTrivialType, Result, Arguments...>(std::move(functor))
+        Func(T &&functor) : Func<NonType, Result, Arguments...>(std::move(functor))
         {
         }
     };
 
     template<typename Result, typename... Arguments>
-    using FuncTrivial = Func<TrivialType, Result, Arguments...>;
+    using MoveDelegate = Func<NonCopyableType, Result, Arguments...>;
 
     template<typename Result, typename... Arguments>
-    using FuncNonCopy = Func<NonCopyableType, Result, Arguments...>;
-
-    template<typename Result, typename... Arguments>
-    using FuncNonMove = Func<NonMovableType, Result, Arguments...>;
+    using Delegate = Func<NonMovableType, Result, Arguments...>;
 }
